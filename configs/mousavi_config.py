@@ -1,7 +1,7 @@
 """Configs for building the Mousavi model.
 """
 
-class mousavi_config:
+class Config:
     """A class used for mousavi model configs
     """
     

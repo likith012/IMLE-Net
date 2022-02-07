@@ -6,3 +6,7 @@
 .pyenv/
 /data/ptb/
 __pycache__/
+logs/
+checkpoints/
+test.py
+test.ipynb

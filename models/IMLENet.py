@@ -42,14 +42,14 @@ from tensorflow.keras.layers import (
 
 class attention(tf.keras.layers.Layer):
     """A class used to build the feed-forward attention layer.
-    
+
     Attributes
     ----------
     return_sequences: bool, optional
         If False, returns the calculated attention weighted sum of an ECG signal. (default: False)
     dim: int, optional
         The dimension of the attention layer. (default: 64)
-        
+
     Methods
     -------
     build(input_shape)
@@ -58,20 +58,20 @@ class attention(tf.keras.layers.Layer):
         Calculates the attention weights.
     get_config()
         Useful for serialization of the attention layer.
-    
+
     """
-    
+
     def __init__(self, return_sequences: bool = False, dim: int = 64, **kwargs):
-        
+
         self.return_sequences = return_sequences
         self.dim = dim
         super(attention, self).__init__(**kwargs)
 
     def build(self, input_shape: tuple):
         """Builds the attention layer.
-        
+
         alpha = softmax(V.T * tanh(W.T * x + b))
-        
+
         Parameters
         ----------
         W: tf.Tensor
@@ -99,13 +99,13 @@ class attention(tf.keras.layers.Layer):
         ----------
         x: tf.Tensor
             The input tensor.
-       
+
         Returns
         -------
         tf.Tensor
             The attention weighted sum of the input tensor.
         """
-        
+
         e = K.tanh(K.dot(x, self.W) + self.b)
         e = K.dot(e, self.V)
         a = K.softmax(e, axis=1)
@@ -117,16 +117,14 @@ class attention(tf.keras.layers.Layer):
         return K.sum(output, axis=1), a
 
     def get_config(self) -> dict:
-        """Returns the config of the attention layer. Useful for serialization.
-        """
-        
+        """Returns the config of the attention layer. Useful for serialization."""
+
         base_config = super().get_config()
         config = {
             "return sequences": tf.keras.initializers.serialize(self.return_sequences),
             "att dim": tf.keras.initializers.serialize(self.dim),
         }
         return dict(list(base_config.items()) + list(config.items()))
-
 
 
 def relu_bn(inputs: tf.Tensor) -> tf.Tensor:
@@ -136,19 +134,21 @@ def relu_bn(inputs: tf.Tensor) -> tf.Tensor:
     ----------
     inputs: tf.Tensor
         The input tensor.
-        
+
     Returns
     -------
     tf.Tensor
         ReLU and Batch Normalization applied to the input tensor.
     """
-    
+
     relu = ReLU()(inputs)
     bn = BatchNormalization()(relu)
     return bn
 
 
-def residual_block(x: tf.Tensor, downsample: bool, filters: int, kernel_size: int = 8) -> tf.Tensor:
+def residual_block(
+    x: tf.Tensor, downsample: bool, filters: int, kernel_size: int = 8
+) -> tf.Tensor:
     """[summary]
 
     Parameters
@@ -179,10 +179,11 @@ def residual_block(x: tf.Tensor, downsample: bool, filters: int, kernel_size: in
 
     if downsample:
         x = Conv1D(kernel_size=1, strides=2, filters=filters, padding="same")(x)
-        
+
     out = Add()([x, y])
     out = relu_bn(out)
     return out
+
 
 def build_imle_net(config) -> tf.keras.Model:
     """Builds the IMLE-Net model.
@@ -191,22 +192,24 @@ def build_imle_net(config) -> tf.keras.Model:
     ----------
     config: imle_config
         The configs for building the model.
-    
+
     Returns
     -------
     tf.keras.Model
         The keras sequential model.
-           
+
     """
 
     inputs = Input(shape=(config.input_channels, config.signal_len, 1), batch_size=None)
 
     # Beat Level
     x = K.reshape(inputs, (-1, config.beat_len, 1))
-    x = Conv1D(filters=config.start_filters, kernel_size=config.kernel_size, padding="same")(x)
+    x = Conv1D(
+        filters=config.start_filters, kernel_size=config.kernel_size, padding="same"
+    )(x)
     x = Activation("relu")(x)
 
-    num_filters = config.start_filters 
+    num_filters = config.start_filters
     for i in range(len(config.num_blocks_list)):
         num_blocks = config.num_blocks_list[i]
         for j in range(num_blocks):
@@ -226,5 +229,11 @@ def build_imle_net(config) -> tf.keras.Model:
     outputs = Dense(config.classes, activation="sigmoid")(x)
 
     model = tf.keras.models.Model(inputs=inputs, outputs=outputs)
+    model.compile(
+        optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
+        loss=tf.keras.losses.BinaryCrossentropy(),
+        metrics=["accuracy", tf.keras.metrics.AUC(multi_label=True)],
+    )
+    print(model.summary())
     
     return model

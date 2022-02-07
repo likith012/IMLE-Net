@@ -1,0 +1,19 @@
+
+wandb is working
+Error in sys.excepthook:
+Traceback (most recent call last):
+  File "C:\Users\likit\miniconda3\envs\tf\lib\site-packages\IPython\core\interactiveshell.py", line 1934, in showtraceback
+    stb = value._render_traceback_()
+AttributeError: 'RuntimeError' object has no attribute '_render_traceback_'
+During handling of the above exception, another exception occurred:
+Traceback (most recent call last):
+  File "C:\Users\likit\miniconda3\envs\tf\lib\site-packages\IPython\core\interactiveshell.py", line 1936, in showtraceback
+    stb = self.InteractiveTB.structured_traceback(etype,
+  File "C:\Users\likit\miniconda3\envs\tf\lib\site-packages\IPython\core\ultratb.py", line 1105, in structured_traceback
+    return FormattedTB.structured_traceback(
+  File "C:\Users\likit\miniconda3\envs\tf\lib\site-packages\IPython\core\ultratb.py", line 999, in structured_traceback
+    return VerboseTB.structured_traceback(
+  File "C:\Users\likit\miniconda3\envs\tf\lib\site-packages\IPython\core\ultratb.py", line 851, in structured_traceback
+    assert etb is not None
+AssertionError
+Original exception was:

@@ -12,7 +12,6 @@ __version__ = "1.0.0"
 __email__ = "likith012@gmail.com"
 
 
-
 import tensorflow as tf
 import tensorflow.keras.backend as K
 from tensorflow.keras.layers import (
@@ -33,22 +32,37 @@ def build_mousavi(config) -> tf.keras.Model:
     ----------
     config: mousavi_config
         The configs for building the model.
-    
+
     Returns
     -------
     tf.keras.Model
         The keras sequential model.
-    
+
     """
-    
+
     inputs = Input(shape=(config.signal_len, config.input_channels), batch_size=None)
     x = K.reshape(inputs, (-1, config.beat_len, config.input_channels))
-    
-    x = Conv1D(kernel_size=config.kernel_size, filters=config.filter_size[0], activation="relu", padding="same")(x)
+
+    x = Conv1D(
+        kernel_size=config.kernel_size,
+        filters=config.filter_size[0],
+        activation="relu",
+        padding="same",
+    )(x)
     x = MaxPooling1D(pool_size=config.pool_size)(x)
-    x = Conv1D(kernel_size=config.kernel_size, filters=config.filter_size[1], activation="relu", padding="same")(x)
+    x = Conv1D(
+        kernel_size=config.kernel_size,
+        filters=config.filter_size[1],
+        activation="relu",
+        padding="same",
+    )(x)
     x = MaxPooling1D(pool_size=config.pool_size)(x)
-    x = Conv1D(kernel_size=config.kernel_size, filters=config.filter_size[2], activation="relu", padding="same")(x)
+    x = Conv1D(
+        kernel_size=config.kernel_size,
+        filters=config.filter_size[2],
+        activation="relu",
+        padding="same",
+    )(x)
 
     x = Flatten()(x)
     x = K.reshape(x, (-1, 20, 1536))
@@ -58,6 +72,11 @@ def build_mousavi(config) -> tf.keras.Model:
     outputs = Dense(config.classes, activation="sigmoid")(x)
 
     model = tf.keras.models.Model(inputs=inputs, outputs=outputs)
+    model.compile(
+        optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
+        loss=tf.keras.losses.BinaryCrossentropy(),
+        metrics=["accuracy", tf.keras.metrics.AUC(multi_label=True)],
+    )
+    print(model.summary())
     
     return model
-    

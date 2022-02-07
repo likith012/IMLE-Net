@@ -14,7 +14,7 @@ import os
 import numpy as np
 import tensorflow as tf
 from sklearn.metrics import roc_auc_score
-from metrics import Metrics
+from utils.metrics import Metrics
 
 class model_checkpoint(tf.keras.callbacks.Callback):
     """Custom callback for saving the model and logging the metrics.
@@ -25,8 +25,8 @@ class model_checkpoint(tf.keras.callbacks.Callback):
         Path to the directory where the model will be saved.
     test_data: tf.keras.utils.Sequence
         Dataset object containing the test data.
-    loggr: wandb, optional
-        Wandb object to log metrics. (default: None)
+    loggr: bool, optional
+        Wandb object to log metrics. (default: False)
     monitor: str, optional
         Metric to monitor. (default: 'loss')
     
@@ -37,7 +37,7 @@ class model_checkpoint(tf.keras.callbacks.Callback):
         
     """
 
-    def __init__(self, savepath: str, test_data, loggr = None, monitor='loss', **kwargs):
+    def __init__(self, savepath: str, test_data: tf.keras.utils.Sequence, loggr = False, monitor: str = 'loss', **kwargs):
         
         super().__init__(**kwargs)
         self.savepath = savepath
@@ -77,7 +77,7 @@ class model_checkpoint(tf.keras.callbacks.Callback):
         if epoch > 5 :
             self.model.save_weights(path)
 
-        if self.loggr is not None:
+        if self.loggr:
             self.loggr.log({'train_loss' : logs['loss'], 'epoch' : epoch})
             self.loggr.log({'train_keras_auroc' : logs.get(self.monitor), 'epoch' : epoch})
             

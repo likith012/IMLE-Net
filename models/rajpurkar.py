@@ -220,7 +220,7 @@ def add_compile(model: tf.keras.Model, **params) -> tf.keras.Model:
         metrics=["accuracy", tf.keras.metrics.AUC(multi_label=True)],
     )
 
-def build_network(**params) -> tf.keras.Model:
+def build_rajpurkar(**params) -> tf.keras.Model:
     """Builds the network with the given parameters.
 
     Parameters
@@ -248,4 +248,6 @@ def build_network(**params) -> tf.keras.Model:
     model = tf.keras.models.Model(inputs=[inputs], outputs=[output])
     if params.get("compile", True):
         add_compile(model, **params)
+    print(model.summary())
+        
     return model

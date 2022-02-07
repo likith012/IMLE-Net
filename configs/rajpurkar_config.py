@@ -1,0 +1,16 @@
+"""Config parameters for the Rajpurkar model.
+"""
+
+params = {
+    "conv_subsample_lengths": [1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2],
+    "conv_filter_length": 16,
+    "conv_num_filters_start": 32,
+    "conv_init": "he_normal",
+    "conv_activation": "relu",
+    "conv_dropout": 0.2,
+    "conv_num_skip": 2,
+    "conv_increase_channels_at": 4,
+
+    "learning_rate": 0.001,
+    "batch_size": 32
+    }

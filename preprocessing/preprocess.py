@@ -15,6 +15,7 @@ import numpy as np
 import pandas as pd
 import wfdb
 import ast
+from pathlib import Path
 import os
 
 from sklearn.preprocessing import StandardScaler, MultiLabelBinarizer
@@ -52,7 +53,7 @@ def preprocess(path: str = 'data/ptb') -> tuple:
     Parameters
     ----------
     path: str
-        Path to the dataset.
+        Path to the dataset. (default: 'data/ptb')
     
     Returns
     -------
@@ -61,12 +62,12 @@ def preprocess(path: str = 'data/ptb') -> tuple:
         
     """
 
-    path = os.path.join(os.getcwd(), path)
-    Y = pd.read_csv(path+ 'ptbxl_database.csv', index_col = 'ecg_id')
-    data = np.array([wfdb.rdsamp(path+f)[0] for f in Y.filename_lr])
+    path = os.path.join(os.getcwd(), Path(path))
+    Y = pd.read_csv(os.path.join(path, 'ptbxl_database.csv'), index_col = 'ecg_id')
+    data = np.array([wfdb.rdsamp(os.path.join(path, f))[0] for f in Y.filename_lr])
     Y.scp_codes = Y.scp_codes.apply(lambda x: ast.literal_eval(x))
         
-    agg_df = pd.read_csv(path+ 'scp_statements.csv', index_col = 0)
+    agg_df = pd.read_csv(os.path.join(path, 'scp_statements.csv'), index_col = 0)
     agg_df = agg_df[agg_df.diagnostic == 1]
 
     def agg(y_dic):
@@ -81,9 +82,9 @@ def preprocess(path: str = 'data/ptb') -> tuple:
 
     Y['diagnostic_superclass'] = Y.scp_codes.apply(agg)
     Y['superdiagnostic_len'] = Y['diagnostic_superclass'].apply(lambda x: len(x))
+    counts = pd.Series(np.concatenate(Y.diagnostic_superclass.values)).value_counts()
     Y['diagnostic_superclass'] = Y['diagnostic_superclass'].apply(lambda x: list(set(x).intersection(set(counts.index.values))))
     
-    counts = pd.Series(np.concatenate(Y.diagnostic_superclass.values)).value_counts()
     X_data = data[Y['superdiagnostic_len'] >= 1]
     Y_data = Y[Y['superdiagnostic_len'] >= 1]
 
