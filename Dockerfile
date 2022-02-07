@@ -20,3 +20,4 @@ RUN /bin/bash -c "cd IMLE-Net \
     && source activate imle \
     && pip install -r requirements.txt"
 
+CMD python train.py --model imle_net
