@@ -1,0 +1,8 @@
+/*/__pycache__/
+.vscode/
+.jupyter/
+.ipynb_checkpoints/
+.pytest_cache/
+.pyenv/
+/data/ptb/
+__pycache__/
