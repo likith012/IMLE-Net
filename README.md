@@ -143,12 +143,13 @@ ptbxl
 - `train.py` - Trains a particular model from scratch
 - `preprocessing` contains the preprocessing scripts
 - `models` contains scripts for each model
-- `utils` contains utilities for `dataloading`, `callbacks` and `metrics`
+- `utils` contains utilities for `dataloader`, `callbacks` and `metrics`
 
 #### Training the model
 - All the models are implemented in `tensorflow` and `torch`
 - Models implemented in `tensorflow` are `imle_net`, `mousavi` and `rajpurkar`
 - Models implemented in `torch` are `ecgnet` and `resnet101`
+- To log the training and validation metrics on wandb, set `--log_wandb` flag to `True`
 - To train a particular model from scratch, `cd IMLE-Net`
 - To run `tensorflow` models, `python train.py --data_dir data/ptb --model imle_net --batchsize 32 --epochs 60 --loggr True`
 - To run `torch` models, `python torch_train.py --data_dir data/ptb --model ecgnet --batchsize 32 --epochs 60 --loggr True`
