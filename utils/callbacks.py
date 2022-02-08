@@ -30,6 +30,8 @@ class model_checkpoint(tf.keras.callbacks.Callback):
         Wandb object to log metrics. (default: False)
     monitor: str, optional
         Metric to monitor. (default: 'loss')
+    name: str, optional
+        Name of the model. (default: 'imle_net')
     
     Methods
     -------
@@ -38,13 +40,15 @@ class model_checkpoint(tf.keras.callbacks.Callback):
         
     """
 
-    def __init__(self, savepath: str, test_data: tf.keras.utils.Sequence, loggr = False, monitor: str = 'loss', **kwargs):
+    def __init__(self, savepath: str, test_data: tf.keras.utils.Sequence, loggr = False, monitor: str = 'loss', name: str = 'imle_net', **kwargs):
         
         super().__init__(**kwargs)
         self.savepath = savepath
         self.monitor = monitor
         self.test_data = test_data
         self.loggr = loggr
+        self.name = name
+        self.best_score = 0.0
         
     def on_epoch_end(self, epoch: int, logs: dict = {}) :
         """Saves the model and logs the metrics at the end of each epoch.
@@ -72,10 +76,11 @@ class model_checkpoint(tf.keras.callbacks.Callback):
         roc_auc = roc_auc_score(gt, score, average = 'macro')
         _, accuracy = Metrics(gt, score)
         
-        temp_path = f"{epoch+1}_roc_{roc_auc:.4f}.h5"
+        temp_path = f"{self.name}_weights.h5"
         path = os.path.join(self.savepath, temp_path)
         
-        if epoch > 5 :
+        if epoch > 5 and self.best_score < roc_auc:
+            self.best_score = roc_auc
             self.model.save_weights(path)
 
         if self.loggr:

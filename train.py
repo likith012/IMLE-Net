@@ -1,4 +1,4 @@
-"""Main script to run the training of the model.
+"""Main script to run the training of the model(imle_net, mousavi, rajpurkar).
 """
 
 __author__ = "Likith Reddy"
@@ -24,7 +24,7 @@ random.seed(seed)
 np.random.seed(seed)
 
 
-def train(model, path: str = 'data/ptb', batch_size: int = 32, epochs: int = 60, loggr = False):
+def train(model, path: str = 'data/ptb', batch_size: int = 32, epochs: int = 60, loggr: bool = False, name: str = 'imle_net'):
     """Data preprocessing and training of the model.
 
     Parameters
@@ -39,22 +39,24 @@ def train(model, path: str = 'data/ptb', batch_size: int = 32, epochs: int = 60,
         Number of epochs. (default: 60)
     loggr: bool, optional
         To log wandb metrics. (default: False)
+    name: str, optional
+        Name of the model. (default: 'imle_net')
         
     """
     
-    X_train_scale, y_train, X_test_scale, y_test, _, _ = preprocess(path = path)
+    X_train_scale, y_train, _, _, X_val_scale, y_val = preprocess(path = path)
     train_gen = DataGen(X_train_scale, y_train, batch_size = batch_size)
-    test_gen = DataGen(X_test_scale, y_test, batch_size = batch_size)
+    val_gen = DataGen(X_val_scale, y_val, batch_size = batch_size)
     
     metric = 'auc'
     checkpoint_filepath = os.path.join(os.getcwd(), 'checkpoints/')
     os.makedir(checkpoint_filepath, exist_ok = True)
 
-    checkpoint = model_checkpoint(checkpoint_filepath, test_gen, loggr = loggr, monitor = metric)
+    checkpoint = model_checkpoint(checkpoint_filepath, val_gen, loggr = loggr, monitor = metric, name = name)
     stop_early = tf.keras.callbacks.EarlyStopping(monitor = metric, min_delta = 0.001, patience = 10, mode = "auto", restore_best_weights = True)
 
     callbacks = [checkpoint, stop_early]
-    history = model.fit(train_gen, epochs = epochs, validation_data = test_gen, callbacks = callbacks, workers = 5)
+    history = model.fit(train_gen, epochs = epochs, validation_data = val_gen, callbacks = callbacks, workers = 5)
     json_logs = os.path.join(os.getcwd(), 'logs/model_logs.json')
     json.dump(history.history, open(json_logs, 'w'))
     
@@ -92,4 +94,4 @@ if __name__ == '__main__':
         wandb = wandb.init(project='IMLE-Net', name=args.model, notes=f'Model: {args.model} with batch size: {args.batchsize} and epochs: {args.epochs}', save_code=True)
         args.logger = wandb
         
-    train(model, path = args.data_dir, batch_size = args.batchsize, epochs = args.epochs, loggr = args.loggr)
+    train(model, path = args.data_dir, batch_size = args.batchsize, epochs = args.epochs, loggr = args.loggr, name = args.model)

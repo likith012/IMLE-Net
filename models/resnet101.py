@@ -1,13 +1,60 @@
-def conv3x3(in_planes, out_planes, stride=1):
-    """3x3 convolution with padding"""
+"""An implementation of ECGNet: Deep Network for Arrhythmia Classification
+
+More details on the paper at https://ieeexplore.ieee.org/abstract/document/8438739
+
+This file can also be imported as a module and contains the following functions:
+
+    * conv3x3 - 3x3 convolution with padding
+    * BasicBlock - Implementation of a single Residual block
+    * Bottleneck - Implementation of a bottleneck Residual block
+    * ResNet - Builds the Resnet model
+    * resnet101 - Builds the Resnet-101 model
+    
+"""
+
+import math
+import torch.nn as nn
+
+
+def conv3x3(in_planes: int, out_planes: int, stride: int = 1):
+    """3x3 convolution with padding
+    
+    Parameters
+    ----------
+    in_planes: int
+        The number of input channels.
+    out_planes: int
+        The number of output channels.
+    stride: int, optional
+        The stride for 1D-convolution. (default: 1)
+    
+    Returns
+    -------
+    nn.Module
+        The convolutional layer.
+    """
     return nn.Conv1d(in_planes, out_planes, kernel_size=7, stride=stride,
                      padding=3, bias=False)
 
-
 class BasicBlock(nn.Module):
+    """Implemetation of a single Residual block.
+
+    Attributes
+    ----------
+    expansion: int
+        The expansion factor for the block.
+    stride: int, optional
+        The stride for 1D-convolution. (default: 1)
+    downsample: bool, optional
+        If True, downsamples the input. (default: None)
+    dropout: float
+        The dropout probability. 
+    
+    """
+    
     expansion = 1
 
-    def __init__(self, inplanes, planes, stride=1, downsample=None):
+    def __init__(self, inplanes: int, planes: int, stride: int = 1, downsample: bool = None):
         super(BasicBlock, self).__init__()
         self.conv1 = conv3x3(inplanes, planes, stride)
         self.bn1 = nn.BatchNorm1d(planes)
@@ -20,7 +67,6 @@ class BasicBlock(nn.Module):
 
     def forward(self, x):
         residual = x
-
         out = self.conv1(x)
         out = self.bn1(out)
         out = self.relu(out)
@@ -36,8 +82,20 @@ class BasicBlock(nn.Module):
 
         return out
 
-
 class Bottleneck(nn.Module):
+    """Implementation of a bottleneck Residual block
+
+    Attributes
+    ----------
+    expansion: int
+        The expansion factor for the block.
+    stride: int, optional
+        The stride for 1D-convolution. (default: 1)
+    downsample: bool, optional
+        If True, downsamples the input. (default: None)
+    
+    """
+    
     expansion = 4
 
     def __init__(self, inplanes, planes, stride=1, downsample=None):
@@ -79,8 +137,10 @@ class Bottleneck(nn.Module):
 
 
 class ResNet(nn.Module):
+    """Builds the Resnet model
+    """
 
-    def __init__(self, block, layers, num_classes=5):
+    def __init__(self, block: int, layers: int, num_classes: int = 5):
         self.inplanes = 64
         super(ResNet, self).__init__()
         self.conv1 = nn.Conv1d(12, 64, kernel_size=15, stride=2, padding=7,
@@ -103,7 +163,27 @@ class ResNet(nn.Module):
                 m.weight.data.fill_(1)
                 m.bias.data.zero_()
 
-    def _make_layer(self, block, planes, blocks, stride=1):
+    def _make_layer(self, block: int, planes: int, blocks: int, stride: int = 1):
+        """Builds the Resnet layers
+
+       Parameters
+       ----------
+        block: nn.Module
+            The block to use.
+        planes: int
+            The number of input channels.
+        blocks: int
+            The number of blocks to use.
+        stride: int, optional
+            The stride for 1D-convolution. (default: 1)
+
+        Returns
+        -------
+        nn.Module
+            The output of Resnet layer.
+            
+        """
+        
         downsample = None
         if stride != 1 or self.inplanes != planes * block.expansion:
             downsample = nn.Sequential(
@@ -125,7 +205,6 @@ class ResNet(nn.Module):
         x = self.bn1(x)
         x = self.relu(x)
         x = self.maxpool(x)
-
         x = self.layer1(x)
         x = self.layer2(x)
         x = self.layer3(x)
@@ -137,8 +216,15 @@ class ResNet(nn.Module):
         return x
 
     
-def resnet101(pretrained=False, **kwargs):
+def resnet101(**kwargs):
+    """Builds the Resnet-101 model
+    
+    Returns
+    -------
+    nn.Module
+        The output of Resnet-101 model.
+
+    """
     
     model = ResNet(Bottleneck, [3, 4, 23, 3], **kwargs)
     return model
-

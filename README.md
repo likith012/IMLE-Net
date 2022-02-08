@@ -145,8 +145,12 @@ ptbxl
 - `models` contains scripts for each model
 - `utils` contains utilities for `dataloading`, `callbacks` and `metrics`
 
-#### Usage
+#### Training the model
 - To train a particular model from scratch, run `python train.py --data_dir data/ptb --model imle_net --batchsize 32 --epochs 60 --loggr True`
+
+#### Logs and checkpoints
+- The logs are saved in `logs/` directory.
+- The model checkpoints are saved in `checkpoints/` directory.
 
 ## Getting the weights :weight_lifting:
 
