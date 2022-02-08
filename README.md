@@ -53,8 +53,15 @@ and usability.
 | Rajpurkar et al. | 0.9155 | 87.91 | 0.7895 |
 | **IMLE-Net**| **0.9216** | **88.85** | **0.8057** |
 
-> 12-Lead ECG results
 
+
+> Visualization of normalized attention scores with red having a higher attention score and yellow having a lower attention score for a 12-lead ECG siganl.
+
+<img src="/images/viz_nor_final.png" width="800">
+
+> Channel Importance scores for the same 12-lead ECG signal
+
+<img src="/images/graph.png" width="400">
 
 
 ## Dataset ⚡
@@ -126,6 +133,20 @@ ptbxl
 ```
 
 ## Getting started 🥷
+#### Setting up the environment
+- All the development work is done using `Python 3.7`
+- Install all the necessary dependencies using `requirements.txt` file. Run `pip install -r requirements.txt` in terminal
+- Alternatively, set up the environment and train the model using the `Dockerfile`. Run `docker build -f Dockerfile -t <image_name> .`
+
+#### What each file does
+
+- `train.py` - Trains a particular model from scratch
+- `preprocessing` contains the preprocessing scripts
+- `models` contains scripts for each model
+- `utils` contains utilities for `dataloading`, `callbacks` and `metrics`
+
+#### Usage
+- To train a particular model from scratch, run `python train.py --data_dir data/ptb --model imle_net --batchsize 32 --epochs 60 --loggr True`
 
 ## Getting the weights :weight_lifting:
 
