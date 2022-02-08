@@ -1,4 +1,5 @@
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
 
 # IMLE-Net: An Interpretable Multi-level Multi-channel Model for ECG Classification 
 This repostiory contains code, results and dataset links for our paper titled ***IMLE-Net: An Interpretable Multi-level Multi-channel Model for ECG Classification***. 📝
