@@ -57,7 +57,7 @@ def train(model, path: str = 'data/ptb', batch_size: int = 32, epochs: int = 60,
 
     callbacks = [checkpoint, stop_early]
     history = model.fit(train_gen, epochs = epochs, validation_data = val_gen, callbacks = callbacks, workers = 5)
-    json_logs = os.path.join(os.getcwd(), 'logs/model_logs.json')
+    json_logs = os.path.join(os.getcwd(), f'logs/{name}_logs.json')
     json.dump(history.history, open(json_logs, 'w'))
     
     
@@ -84,7 +84,7 @@ if __name__ == '__main__':
         from configs.mousavi_config import Config
         
         model = build_mousavi(Config())
-    else:
+    elif args.model == 'rajpurkar':
         from models.rajpurkar import build_rajpurkar
         from configs.rajpurkar_config import params
         

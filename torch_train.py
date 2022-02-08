@@ -13,9 +13,12 @@ import json
 from tqdm import tqdm
 import numpy as np
 import wandb
+from sklearn.metrics import roc_auc_score
+import torch
 
 from preprocessing.preprocess import preprocess
 from utils.torch_dataloader import DataGen
+from utils.metrics import Metrics
 
 # Random seed
 seed = 42
@@ -23,7 +26,47 @@ random.seed(seed)
 np.random.seed(seed)
 
 
-def train_epoch(model, optimizer, loss_func, dataset, epoch):
+def dump_logs(train_results: tuple, test_results: tuple, name: str):
+    """Dumping of the logs to json.
+
+    Parameters
+    ----------
+    train_results: tuple
+        Training results.
+    test_results: tuple
+        Testing results.
+    name: str
+        Name of the model.
+        
+    """
+    
+    logs = {'train_loss': train_results[0], 'train_mean_accuracy': train_results[1], 'train_roc_score': train_results[2],\
+            'test_loss': test_results[0], 'test_mean_accuracy': test_results[1], 'test_roc_score': test_results[2]}
+    json_logs = os.path.join(os.getcwd(), logs, f'{name}_logs.json')
+    json.dump(logs, open(json_logs, 'w'))
+    
+    
+def train_epoch(model, optimizer, loss_func, dataset, epoch: int, device: torch.device, loggr: bool = False):
+    """Training of the model for one epoch.
+
+    Parameters
+    ----------
+    model: nn.Module
+        Model to be trained.
+    optimizer: torch.optim
+        Optimizer to be used.
+    loss_func: torch.nn.BCEWithLogitsLoss
+        Loss function to be used.
+    dataset: torch.utils.data.DataLoader
+        Dataset to be used.
+    epoch: int, optional
+        The current epoch. 
+    device: torch.device
+        Device to be used.
+    loggr: bool, optional
+        To log wandb metrics. (default: False)
+    
+    """
 
     model.train()
     
@@ -33,9 +76,9 @@ def train_epoch(model, optimizer, loss_func, dataset, epoch):
     
     for batch_step in tqdm(range(len(dataset)) , desc="train"):
         batch_x, batch_y = dataset[batch_step]    
-        batch_x = batch_x.cuda()
+        batch_x = batch_x.to(device)
         batch_x = batch_x.permute(0,2,1)
-        batch_y = batch_y.cuda()
+        batch_y = batch_y.to(device)
 
         pred = model(batch_x)
         pred_all.append(pred.cpu().detach().numpy())
@@ -45,23 +88,41 @@ def train_epoch(model, optimizer, loss_func, dataset, epoch):
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-
         gt_all.extend(batch_y.cpu().detach().numpy())
 
-    print('epoch {0} '.format(epoch))
-    print('train_loss ', np.mean(loss_all))
+    print('Epoch: {0}'.format(epoch))
+    print('Train loss: ', np.mean(loss_all))
     pred_all = np.concatenate(pred_all, axis=0)
+    _, mean_acc = Metrics(np.array(gt_all), pred_all )
+    roc_score = roc_auc_score(np.array(gt_all), pred_all, average = 'macro')
+    
+    if loggr:
+        loggr.log({'train_mean_accuracy' : mean_acc, 'epoch':epoch})
+        loggr.log({'train_roc_score' : roc_score, 'epoch':epoch})
+        loggr.log({'train_loss' : np.mean(loss_all) , 'epoch':epoch})
 
-    _, mean_acc, roc_score = metrics(np.array(gt_all), pred_all )
-    wandb.log({'train_mean_accuracy' : mean_acc, 'epoch':epoch})
-    wandb.log({'train_roc_score' : roc_score, 'epoch':epoch})
-    wandb.log({'train_loss' : np.mean(loss_all) , 'epoch':epoch})
-
-    return np.mean(loss_all)
+    return np.mean(loss_all), mean_acc, roc_score
 
 
+def test_epoch(model, loss_func, dataset, epoch: int, device: torch.device, loggr: bool = False):
+    """Testing of the model for one epoch.
 
-def test_epoch(model, loss_func, dataset):
+    Parameters
+    ----------
+    model: nn.Module
+        Model to be trained. 
+    loss_func: torch.nn.BCEWithLogitsLoss
+        Loss function to be used.
+    dataset: torch.utils.data.DataLoader
+        Dataset to be used.
+    epoch: int, optional
+        The current epoch. 
+    device: torch.device
+        Device to be used.
+    loggr: bool, optional
+        To log wandb metrics. (default: False)
+    
+    """
 
     model.eval()
     
@@ -69,30 +130,29 @@ def test_epoch(model, loss_func, dataset):
     loss_all = []
     gt_all = []
     
-    for batch_step in tqdm(range(len(dataset)) , desc="test"):
+    for batch_step in tqdm(range(len(dataset)) , desc="valid"):
         batch_x, batch_y = dataset[batch_step]
-        batch_x = batch_x.cuda()
+        batch_x = batch_x.to(device)
         batch_x = batch_x.permute(0,2,1)
-        batch_y = batch_y.cuda()
+        batch_y = batch_y.to(device)    
         
         pred = model(batch_x)
         pred_all.append(pred.cpu().detach().numpy())
-       
         loss = loss_func(pred, batch_y)
         loss_all.append(loss.cpu().detach().numpy())
         gt_all.extend(batch_y.cpu().detach().numpy())
 
-    print('test_loss ', np.mean(loss_all))
+    print('Test loss: ', np.mean(loss_all))
     pred_all = np.concatenate(pred_all, axis=0)
-
-    _, mean_acc, roc_score = metrics(np.array(gt_all), pred_all )
-    wandb.log({'test_mean_accuracy' : mean_acc, 'epoch':epoch})
-    wandb.log({'test_roc_score' : roc_score, 'epoch':epoch})
-    wandb.log({'test_loss' : np.mean(loss_all) , 'epoch':epoch})
+    _, mean_acc = Metrics(np.array(gt_all), pred_all)
+    roc_score = roc_auc_score(np.array(gt_all), pred_all, average = 'macro')
+    
+    if loggr:
+        loggr.log({'test_mean_accuracy' : mean_acc, 'epoch':epoch})
+        loggr.log({'test_roc_score' : roc_score, 'epoch':epoch})
+        loggr.log({'test_loss' : np.mean(loss_all) , 'epoch':epoch})
 
     return np.mean(loss_all), mean_acc, roc_score
-
-
 
 
 def train(model, path: str = 'data/ptb', batch_size: int = 32, epochs: int = 60, loggr: bool = False, name: str = 'imle_net'):
@@ -118,9 +178,24 @@ def train(model, path: str = 'data/ptb', batch_size: int = 32, epochs: int = 60,
     X_train_scale, y_train, _, _, X_val_scale, y_val = preprocess(path = path)
     train_gen = DataGen(X_train_scale, y_train, batch_size = batch_size)
     val_gen = DataGen(X_val_scale, y_val, batch_size = batch_size)
+   
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    model.to(device)
+
+    optimizer = torch.optim.Adam(model.parameters(), lr = 0.001)
+    loss_func = torch.nn.BCEWithLogitsLoss()
     
-    
-    
+    best_score = 0.0
+    for epoch in range(epochs):
+        train_results = train_epoch(model, optimizer, loss_func, train_gen, epoch, device, loggr = loggr)
+        test_results = test_epoch(model, loss_func, val_gen, epoch, device, loggr = loggr)
+        
+        if epoch > 5 and best_score < test_results[2]:
+            save_path = os.path.join(os.getcwd(), 'checkpoints/', f'{name}_weights.pt')
+            torch.save(model.state_dict(), save_path)
+            dump_logs(train_results, test_results, name)
+            
+            
 if __name__ == '__main__':
     """Main function to run the training of the model.
     """
@@ -136,11 +211,9 @@ if __name__ == '__main__':
     
     if args.model == 'ecgnet':
         from models.ECGNet import ECGNet
-        
         model = ECGNet()
     else:
         from models.resnet101 import resnet101
-        
         model = resnet101()
         
     if args.loggr:

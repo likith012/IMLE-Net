@@ -146,7 +146,17 @@ ptbxl
 - `utils` contains utilities for `dataloading`, `callbacks` and `metrics`
 
 #### Training the model
-- To train a particular model from scratch, run `python train.py --data_dir data/ptb --model imle_net --batchsize 32 --epochs 60 --loggr True`
+- All the models are implemented in `tensorflow` and `torch`
+- Models implemented in `tensorflow` are `imle_net`, `mousavi` and `rajpurkar`
+- Models implemented in `torch` are `ecgnet` and `resnet101`
+- To train a particular model from scratch, `cd IMLE-Net`
+- To run `tensorflow` models, `python train.py --data_dir data/ptb --model imle_net --batchsize 32 --epochs 60 --loggr True`
+- To run `torch` models, `python torch_train.py --data_dir data/ptb --model ecgnet --batchsize 32 --epochs 60 --loggr True`
+
+#### Testing the model
+- To test the model, `cd IMLE-Net`
+- To run `tensorflow` models, `python inference.py --data_dir data/ptb --model imle_net --batchsize 32`
+- To run `torch` models, `python torch_inference.py --data_dir data/ptb --model ecgnet --batchsize 32`
 
 #### Logs and checkpoints
 - The logs are saved in `logs/` directory.
