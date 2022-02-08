@@ -55,11 +55,11 @@ and usability.
 
 
 
-> Visualization of normalized attention scores with red having a higher attention score and yellow having a lower attention score for a 12-lead ECG siganl.
+> Visualization of normalized attention scores with red having a higher attention score and yellow having a lower attention score for a 12-lead ECG signal.
 
 <img src="/images/viz_nor_final.png" width="800">
 
-> Channel Importance scores for the same 12-lead ECG signal
+> Channel Importance scores for the same 12-lead ECG signal.
 
 <img src="/images/graph.png" width="400">
 
@@ -73,7 +73,7 @@ The `PTB-XL` dataset can be downloaded from the [Physionet website](https://phys
 #### Getting started :ninja:
 
 * Download the dataset  using the terminal `wget -r -N -c -np https://physionet.org/files/ptb-xl/1.0.1/`
-* Rename the directory of the dataset to `ptb`
+* Rename the directory of the downloaded dataset to `ptb`
 * Copy the `ptb` directory to the `data/ptb`
 
 #### Description :information_desk_person:
@@ -140,7 +140,7 @@ ptbxl
 
 #### What each file does
 
-- `train.py` - Trains a particular model from scratch
+- `train.py` trains a particular model from scratch
 - `preprocessing` contains the preprocessing scripts
 - `models` contains scripts for each model
 - `utils` contains utilities for `dataloader`, `callbacks` and `metrics`
