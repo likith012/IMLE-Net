@@ -94,8 +94,7 @@ years. The dataset covers a wide range of pathologies with
 many different co-occurring diseases. The ECG waveform
 records are annotated by two certified cardiologists. Each
 ECG record has labels assigned out of a set of 71 different
-statements conforming to the Standard communications pro-
-tocol for computer assisted electrocardiography (SCP-ECG)
+statements conforming to the Standard communications protocol for computer assisted electrocardiography (SCP-ECG)
 standard. The ECG waveform was originally recorded at a
 sampling rate of 400 Hz and downsampled to 100 Hz. All
 the experiments in our work were performed using the 100
