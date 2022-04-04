@@ -13,12 +13,15 @@ This file can also be imported as a module and contains the following functions:
 """
 
 import math
+from typing import List
+
+import torch
 import torch.nn as nn
 
 
-def conv3x3(in_planes: int, out_planes: int, stride: int = 1):
+def conv3x3(in_planes: int, out_planes: int, stride: int = 1) -> nn.Module:
     """3x3 convolution with padding
-    
+
     Parameters
     ----------
     in_planes: int
@@ -27,14 +30,16 @@ def conv3x3(in_planes: int, out_planes: int, stride: int = 1):
         The number of output channels.
     stride: int, optional
         The stride for 1D-convolution. (default: 1)
-    
+
     Returns
     -------
     nn.Module
         The convolutional layer.
     """
-    return nn.Conv1d(in_planes, out_planes, kernel_size=7, stride=stride,
-                     padding=3, bias=False)
+    return nn.Conv1d(
+        in_planes, out_planes, kernel_size=7, stride=stride, padding=3, bias=False
+    )
+
 
 class BasicBlock(nn.Module):
     """Implemetation of a single Residual block.
@@ -48,13 +53,15 @@ class BasicBlock(nn.Module):
     downsample: bool, optional
         If True, downsamples the input. (default: None)
     dropout: float
-        The dropout probability. 
-    
+        The dropout probability.
+
     """
-    
+
     expansion = 1
 
-    def __init__(self, inplanes: int, planes: int, stride: int = 1, downsample: bool = None):
+    def __init__(
+        self, inplanes: int, planes: int, stride: int = 1, downsample: bool = None
+    ) -> None:
         super(BasicBlock, self).__init__()
         self.conv1 = conv3x3(inplanes, planes, stride)
         self.bn1 = nn.BatchNorm1d(planes)
@@ -63,9 +70,9 @@ class BasicBlock(nn.Module):
         self.bn2 = nn.BatchNorm1d(planes)
         self.downsample = downsample
         self.stride = stride
-        self.dropout = nn.Dropout(.2)
+        self.dropout = nn.Dropout(0.2)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         residual = x
         out = self.conv1(x)
         out = self.bn1(out)
@@ -82,6 +89,7 @@ class BasicBlock(nn.Module):
 
         return out
 
+
 class Bottleneck(nn.Module):
     """Implementation of a bottleneck Residual block
 
@@ -93,26 +101,29 @@ class Bottleneck(nn.Module):
         The stride for 1D-convolution. (default: 1)
     downsample: bool, optional
         If True, downsamples the input. (default: None)
-    
+
     """
-    
+
     expansion = 4
 
-    def __init__(self, inplanes, planes, stride=1, downsample=None):
+    def __init__(
+        self, inplanes: int, planes: int, stride: int = 1, downsample: bool = None
+    ) -> None:
         super(Bottleneck, self).__init__()
         self.conv1 = nn.Conv1d(inplanes, planes, kernel_size=7, bias=False, padding=3)
         self.bn1 = nn.BatchNorm1d(planes)
-        self.conv2 = nn.Conv1d(planes, planes, kernel_size=11, stride=stride,
-                               padding=5, bias=False)
+        self.conv2 = nn.Conv1d(
+            planes, planes, kernel_size=11, stride=stride, padding=5, bias=False
+        )
         self.bn2 = nn.BatchNorm1d(planes)
         self.conv3 = nn.Conv1d(planes, planes * 4, kernel_size=7, bias=False, padding=3)
         self.bn3 = nn.BatchNorm1d(planes * 4)
         self.relu = nn.ReLU(inplace=True)
         self.downsample = downsample
         self.stride = stride
-        self.dropout = nn.Dropout(.2)
+        self.dropout = nn.Dropout(0.2)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         residual = x
 
         out = self.conv1(x)
@@ -137,14 +148,12 @@ class Bottleneck(nn.Module):
 
 
 class ResNet(nn.Module):
-    """Builds the Resnet model
-    """
+    """Builds the Resnet model"""
 
-    def __init__(self, block: int, layers: int, num_classes: int = 5):
+    def __init__(self, block: int, layers: int, num_classes: int = 5) -> None:
         self.inplanes = 64
         super(ResNet, self).__init__()
-        self.conv1 = nn.Conv1d(12, 64, kernel_size=15, stride=2, padding=7,
-                               bias=False)
+        self.conv1 = nn.Conv1d(12, 64, kernel_size=15, stride=2, padding=7, bias=False)
         self.bn1 = nn.BatchNorm1d(64)
         self.relu = nn.ReLU(inplace=True)
         self.maxpool = nn.MaxPool1d(kernel_size=3, stride=2, padding=1)
@@ -158,37 +167,44 @@ class ResNet(nn.Module):
         for m in self.modules():
             if isinstance(m, nn.Conv1d):
                 n = m.kernel_size[0] * m.kernel_size[0] * m.out_channels
-                m.weight.data.normal_(0, math.sqrt(2. / n))
+                m.weight.data.normal_(0, math.sqrt(2.0 / n))
             elif isinstance(m, nn.BatchNorm1d):
                 m.weight.data.fill_(1)
                 m.bias.data.zero_()
 
-    def _make_layer(self, block: int, planes: int, blocks: int, stride: int = 1):
+    def _make_layer(
+        self, block: int, planes: int, blocks: int, stride: int = 1
+    ) -> List[nn.Module]:
         """Builds the Resnet layers
 
-       Parameters
-       ----------
-        block: nn.Module
-            The block to use.
-        planes: int
-            The number of input channels.
-        blocks: int
-            The number of blocks to use.
-        stride: int, optional
-            The stride for 1D-convolution. (default: 1)
+        Parameters
+        ----------
+         block: nn.Module
+             The block to use.
+         planes: int
+             The number of input channels.
+         blocks: int
+             The number of blocks to use.
+         stride: int, optional
+             The stride for 1D-convolution. (default: 1)
 
-        Returns
-        -------
-        nn.Module
-            The output of Resnet layer.
-            
+         Returns
+         -------
+         nn.Module
+             The output of Resnet layer.
+
         """
-        
+
         downsample = None
         if stride != 1 or self.inplanes != planes * block.expansion:
             downsample = nn.Sequential(
-                nn.Conv1d(self.inplanes, planes * block.expansion,
-                          kernel_size=1, stride=stride, bias=False),
+                nn.Conv1d(
+                    self.inplanes,
+                    planes * block.expansion,
+                    kernel_size=1,
+                    stride=stride,
+                    bias=False,
+                ),
                 nn.BatchNorm1d(planes * block.expansion),
             )
 
@@ -200,7 +216,7 @@ class ResNet(nn.Module):
 
         return nn.Sequential(*layers)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu(x)
@@ -215,16 +231,16 @@ class ResNet(nn.Module):
 
         return x
 
-    
-def resnet101(**kwargs):
+
+def resnet101(**kwargs) -> ResNet:
     """Builds the Resnet-101 model
-    
+
     Returns
     -------
     nn.Module
         The output of Resnet-101 model.
 
     """
-    
+
     model = ResNet(Bottleneck, [3, 4, 23, 3], **kwargs)
     return model

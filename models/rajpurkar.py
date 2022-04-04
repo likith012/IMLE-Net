@@ -31,17 +31,17 @@ from tensorflow.keras.layers import (
 
 def _bn_relu(layer: tf.Tensor, dropout: int = 0, **params) -> tf.Tensor:
     """Helper to build a BN -> relu block with dropout
-    
+
     Parameters
     ----------
     layer: tf.Tensor
         The input layer to the block.
-    
+
     Returns
     -------
     tf.Tensor
         Applies batch normalization and relu activation to the input layer.
-    
+
     """
 
     layer = BatchNormalization()(layer)
@@ -50,9 +50,16 @@ def _bn_relu(layer: tf.Tensor, dropout: int = 0, **params) -> tf.Tensor:
         layer = Dropout(params["conv_dropout"])(layer)
     return layer
 
-def add_conv_weight(layer: tf.Tensor, filter_length: int, num_filters: int, subsample_length: int = 1, **params) -> tf.Tensor:
+
+def add_conv_weight(
+    layer: tf.Tensor,
+    filter_length: int,
+    num_filters: int,
+    subsample_length: int = 1,
+    **params
+) -> tf.Tensor:
     """Helper to build a convolutional layer with a given filter length and number of filters.
-    
+
     Parameters
     ----------
     layer: tf.Tensor
@@ -63,12 +70,12 @@ def add_conv_weight(layer: tf.Tensor, filter_length: int, num_filters: int, subs
         The number of filters to the 1D convolution.
     subsample_length: int
         The length of the the strides to the 1D convolution.
-    
+
     Returns
     -------
     tf.Tensor
         Apply 1D convolution to the input layer.
-    
+
     """
     layer = Conv1D(
         filters=num_filters,
@@ -79,6 +86,7 @@ def add_conv_weight(layer: tf.Tensor, filter_length: int, num_filters: int, subs
     )(layer)
     return layer
 
+
 def add_conv_layers(layer: tf.Tensor, **params) -> tf.Tensor:
     """Helper to build the convolutional layers of the network.
 
@@ -86,14 +94,14 @@ def add_conv_layers(layer: tf.Tensor, **params) -> tf.Tensor:
     ----------
     layer: tf.Tensor
         The input layer to the network.
-    
+
     Returns
     -------
     tf.Tensor
         Applies the convolutional layers to the input layer.
-    
+
     """
-    
+
     for subsample_length in params["conv_subsample_lengths"]:
         layer = add_conv_weight(
             layer,
@@ -105,9 +113,16 @@ def add_conv_layers(layer: tf.Tensor, **params) -> tf.Tensor:
         layer = _bn_relu(layer, **params)
     return layer
 
-def resnet_block(layer, num_filters, subsample_length, block_index, **params):
+
+def resnet_block(
+    layer: tf.Tensor,
+    num_filters: int,
+    subsample_length: int,
+    block_index: int,
+    **params
+) -> tf.Tensor:
     """Implements a resnet block to the network.
-    
+
     Parameters
     ----------
     layer: tf.Tensor
@@ -118,14 +133,14 @@ def resnet_block(layer, num_filters, subsample_length, block_index, **params):
         The length of the the strides to the 1D convolution.
     block_index: int
         The index of the resnet block.
-    
+
     Returns
     -------
     tf.Tensor
         Applies the resnet block to the input layer.
-    
+
     """
-    
+
     def zeropad(x):
         y = K.zeros_like(x)
         return K.concatenate([x, y], axis=2)
@@ -137,8 +152,10 @@ def resnet_block(layer, num_filters, subsample_length, block_index, **params):
         return tuple(shape)
 
     shortcut = MaxPooling1D(pool_size=subsample_length, padding="same")(layer)
-    zero_pad = (block_index % params["conv_increase_channels_at"]) == 0 and block_index > 0
-    
+    zero_pad = (
+        block_index % params["conv_increase_channels_at"]
+    ) == 0 and block_index > 0
+
     if zero_pad is True:
         shortcut = Lambda(zeropad, output_shape=zeropad_output_shape)(shortcut)
 
@@ -157,8 +174,10 @@ def resnet_block(layer, num_filters, subsample_length, block_index, **params):
     layer = Add()([shortcut, layer])
     return layer
 
+
 def get_num_filters_at_index(index: int, num_start_filters: int, **params) -> int:
     return 2 ** int(index / params["conv_increase_channels_at"]) * num_start_filters
+
 
 def add_resnet_layers(layer: tf.Tensor, **params) -> tf.Tensor:
     """Adds the resnet layers to the network.
@@ -167,14 +186,14 @@ def add_resnet_layers(layer: tf.Tensor, **params) -> tf.Tensor:
     ----------
     layer: tf.Tensor
         The input layer to the block.
-    
+
     Returns
     -------
     tf.Tensor
         Applies the resnet layers to the input layer.
-    
+
     """
-    
+
     layer = add_conv_weight(
         layer,
         params["conv_filter_length"],
@@ -191,12 +210,13 @@ def add_resnet_layers(layer: tf.Tensor, **params) -> tf.Tensor:
     layer = _bn_relu(layer, **params)
     return layer
 
-def add_output_layer(layer: tf.Tensor, **params) -> tf.Tensor:
-    """Adds the output layer to the network.
-    """
+
+def add_output_layer(layer: tf.Tensor) -> tf.Tensor:
+    """Adds the output layer to the network."""
     layer = Flatten()(layer)
     layer = Dense(5)(layer)
     return Activation("sigmoid")(layer)
+
 
 def add_compile(model: tf.keras.Model, **params) -> tf.keras.Model:
     """Compiles the model with the given parameters.
@@ -205,12 +225,12 @@ def add_compile(model: tf.keras.Model, **params) -> tf.keras.Model:
     ----------
     model: tf.keras.Model
         The model to compile.
-    
+
     Returns
     -------
     tf.keras.Model
         Compiles the model with loss and optimizer.
-    
+
     """
 
     optimizer = Adam(lr=params["learning_rate"], clipnorm=params.get("clipnorm", 1))
@@ -220,6 +240,7 @@ def add_compile(model: tf.keras.Model, **params) -> tf.keras.Model:
         metrics=["accuracy", tf.keras.metrics.AUC(multi_label=True)],
     )
 
+
 def build_rajpurkar(**params) -> tf.keras.Model:
     """Builds the network with the given parameters.
 
@@ -227,18 +248,23 @@ def build_rajpurkar(**params) -> tf.keras.Model:
     ----------
     params: dict
         The parameters to build the network.
-    
+
     Returns
     -------
     tf.keras.Model
         Returns the final model.
-    
+
     """
-    
+
     signal_len = 1000
     input_channels = 12
-    
-    inputs = Input(shape=(signal_len, input_channels), dtype="float32", name="inputs", batch_size=None)
+
+    inputs = Input(
+        shape=(signal_len, input_channels),
+        dtype="float32",
+        name="inputs",
+        batch_size=None,
+    )
     if params.get("is_regular_conv", False):
         layer = add_conv_layers(inputs, **params)
     else:
@@ -249,5 +275,5 @@ def build_rajpurkar(**params) -> tf.keras.Model:
     if params.get("compile", True):
         add_compile(model, **params)
     print(model.summary())
-        
+
     return model

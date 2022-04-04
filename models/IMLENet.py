@@ -25,6 +25,8 @@ __author__ = "Likith Reddy"
 __version__ = "1.0.0"
 __email__ = "likith012@gmail.com"
 
+from typing import Tuple, Dict, List, Any
+
 import tensorflow as tf
 import tensorflow.keras.backend as K
 from tensorflow.keras.layers import (
@@ -61,13 +63,13 @@ class attention(tf.keras.layers.Layer):
 
     """
 
-    def __init__(self, return_sequences: bool = False, dim: int = 64, **kwargs):
+    def __init__(self, return_sequences: bool = False, dim: int = 64, **kwargs) -> None:
 
         self.return_sequences = return_sequences
         self.dim = dim
         super(attention, self).__init__(**kwargs)
 
-    def build(self, input_shape: tuple):
+    def build(self, input_shape: Tuple[int, int, int]) -> None:
         """Builds the attention layer.
 
         alpha = softmax(V.T * tanh(W.T * x + b))
@@ -116,7 +118,7 @@ class attention(tf.keras.layers.Layer):
 
         return K.sum(output, axis=1), a
 
-    def get_config(self) -> dict:
+    def get_config(self) -> Dict[List[Any]]:
         """Returns the config of the attention layer. Useful for serialization."""
 
         base_config = super().get_config()
@@ -235,5 +237,5 @@ def build_imle_net(config) -> tf.keras.Model:
         metrics=["accuracy", tf.keras.metrics.AUC(multi_label=True)],
     )
     print(model.summary())
-    
+
     return model

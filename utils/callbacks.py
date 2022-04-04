@@ -17,6 +17,7 @@ from sklearn.metrics import roc_auc_score
 
 from utils.metrics import Metrics
 
+
 class model_checkpoint(tf.keras.callbacks.Callback):
     """Custom callback for saving the model and logging the metrics.
 
@@ -32,16 +33,24 @@ class model_checkpoint(tf.keras.callbacks.Callback):
         Metric to monitor. (default: 'loss')
     name: str, optional
         Name of the model. (default: 'imle_net')
-    
+
     Methods
     -------
     on_epoch_end(epoch, logs = {})
         Saves the model and logs the metrics at the end of each epoch.
-        
+
     """
 
-    def __init__(self, savepath: str, test_data: tf.keras.utils.Sequence, loggr = False, monitor: str = 'loss', name: str = 'imle_net', **kwargs):
-        
+    def __init__(
+        self,
+        savepath: str,
+        test_data: tf.keras.utils.Sequence,
+        loggr: bool = False,
+        monitor: str = "loss",
+        name: str = "imle_net",
+        **kwargs,
+    ) -> None:
+
         super().__init__(**kwargs)
         self.savepath = savepath
         self.monitor = monitor
@@ -49,54 +58,56 @@ class model_checkpoint(tf.keras.callbacks.Callback):
         self.loggr = loggr
         self.name = name
         self.best_score = 0.0
-        
-    def on_epoch_end(self, epoch: int, logs: dict = {}) :
+
+    def on_epoch_end(self, epoch: int, logs: dict = {}) -> None:
         """Saves the model and logs the metrics at the end of each epoch.
-        
+
         Parameters
         ----------
         epoch: int
             Epoch number.
         logs: dict, optional
             Dictionary containing the metrics. (default: {})
-        
+
         """
-        
+
         test_len = len(self.test_data)
-        score = []; gt =[]
+        score = []
+        gt = []
 
         for i in range(test_len):
-            X,y = self.test_data[i][0], self.test_data[i][1]
+            X, y = self.test_data[i][0], self.test_data[i][1]
             temp_score = self.model.predict(X)
             score.append(temp_score)
             gt.append(y)
 
-        score = np.concatenate(score, axis = 0)
-        gt = np.concatenate(gt, axis = 0)
-        roc_auc = roc_auc_score(gt, score, average = 'macro')
+        score = np.concatenate(score, axis=0)
+        gt = np.concatenate(gt, axis=0)
+        roc_auc = roc_auc_score(gt, score, average="macro")
         _, accuracy = Metrics(gt, score)
-        
+
         temp_path = f"{self.name}_weights.h5"
         path = os.path.join(self.savepath, temp_path)
-        
+
         if epoch > 5 and self.best_score < roc_auc:
             self.best_score = roc_auc
             self.model.save_weights(path)
 
         if self.loggr:
-            self.loggr.log({'train_loss' : logs['loss'], 'epoch' : epoch})
-            self.loggr.log({'train_keras_auroc' : logs.get(self.monitor), 'epoch' : epoch})
-            
-            self.loggr.log({'test_loss' : logs['val_loss'], 'epoch' : epoch})
-            self.loggr.log({'test_keras_auroc' : logs['val_auc'], 'epoch' : epoch})
+            self.loggr.log({"train_loss": logs["loss"], "epoch": epoch})
+            self.loggr.log(
+                {"train_keras_auroc": logs.get(self.monitor), "epoch": epoch}
+            )
 
-            self.loggr.log({'test_roc_score' : roc_auc, 'epoch' : epoch})
-            self.loggr.log({'test_accuracy_score' : accuracy, 'epoch' : epoch})
-        
-        logs['val_roc_auc'] = roc_auc
-        logs['val_accuracy_score'] = accuracy
-    
-    def set_model(self, model: tf.keras.Model):
-        """Sets the model to be saved.
-        """
+            self.loggr.log({"test_loss": logs["val_loss"], "epoch": epoch})
+            self.loggr.log({"test_keras_auroc": logs["val_auc"], "epoch": epoch})
+
+            self.loggr.log({"test_roc_score": roc_auc, "epoch": epoch})
+            self.loggr.log({"test_accuracy_score": accuracy, "epoch": epoch})
+
+        logs["val_roc_auc"] = roc_auc
+        logs["val_accuracy_score"] = accuracy
+
+    def set_model(self, model: tf.keras.Model) -> None:
+        """Sets the model to be saved."""
         self.model = model

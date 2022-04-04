@@ -9,6 +9,7 @@ This file can also be imported as a module and contains the following functions:
 
 """
 
+from typing import List
 import torch
 import torch.nn as nn
 
@@ -39,8 +40,14 @@ class ResBlock(nn.Module):
     """
 
     def __init__(
-        self, in_channels: int, out_channels: int, kernel_size: int, stride: int, padding: int, downsample: bool = None
-    ):
+        self,
+        in_channels: int,
+        out_channels: int,
+        kernel_size: int,
+        stride: int,
+        padding: int,
+        downsample: bool = None,
+    ) -> None:
         super(ResBlock, self).__init__()
         self.bn1 = nn.BatchNorm1d(num_features=in_channels)
         self.relu = nn.ReLU(inplace=False)
@@ -65,7 +72,7 @@ class ResBlock(nn.Module):
         self.maxpool = nn.MaxPool1d(kernel_size=2, stride=2, padding=0)
         self.downsample = downsample
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         identity = x
         out = self.bn1(x)
         out = self.relu(out)
@@ -104,20 +111,20 @@ class ECGNet(nn.Module):
         Calculates the output of the ECGNet model.
 
     """
-    
+
     def __init__(
         self,
-        struct: list = [15, 17, 19, 21],
+        struct: List[int] = [15, 17, 19, 21],
         in_channels: int = 12,
         fixed_kernel_size: int = 17,
         num_classes: int = 5,
-    ):
+    ) -> None:
         super(ECGNet, self).__init__()
         self.struct = struct
         self.planes = 16
         self.parallel_conv = nn.ModuleList()
 
-        for i, kernel_size in enumerate(struct):
+        for _, kernel_size in enumerate(struct):
             sep_conv = nn.Conv1d(
                 in_channels=in_channels,
                 out_channels=self.planes,
@@ -148,7 +155,9 @@ class ECGNet(nn.Module):
         )
         self.fc = nn.Linear(in_features=168, out_features=num_classes)
 
-    def _make_layer(self, kernel_size: int, stride: int, blocks: int = 15, padding: int = 0):
+    def _make_layer(
+        self, kernel_size: int, stride: int, blocks: int = 15, padding: int = 0
+    ) -> List[ResBlock]:
         """Builds the ECGNet architecture.
 
         Parameters
@@ -161,13 +170,13 @@ class ECGNet(nn.Module):
             The number of blocks in the layer. (default: 15)
         padding: int, optional
             The padding for 1D-convolution. (default: 0)
-            
+
         Returns
         -------
         nn.Module
             The output layer of the ECGNet model.
         """
-        
+
         layers = []
         downsample = None
         base_width = self.planes
@@ -225,7 +234,7 @@ class ECGNet(nn.Module):
 
         return nn.Sequential(*layers)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         out_sep = []
 
         for i in range(len(self.struct)):
@@ -247,5 +256,5 @@ class ECGNet(nn.Module):
         new_rnn_h = rnn_h[-1, :, :]  # rnn_h => [b, 40]
         new_out = torch.cat([out, new_rnn_h], dim=1)  # out => [b, 680]
         result = self.fc(new_out)  # out => [b, 20]
-        
+
         return result

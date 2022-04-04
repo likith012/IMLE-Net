@@ -6,6 +6,7 @@ __version__ = "1.0.0"
 __email__ = "likith012@gmail.com"
 
 
+from typing import List
 import os
 import random
 import argparse
@@ -14,6 +15,7 @@ from tqdm import tqdm
 import numpy as np
 from sklearn.metrics import roc_auc_score
 import torch
+import torch.nn as nn
 
 from preprocessing.preprocess import preprocess
 from utils.torch_dataloader import DataGen
@@ -25,9 +27,11 @@ random.seed(seed)
 np.random.seed(seed)
 
 
-def epoch_run(model, dataset, device):
-    """ Testing of the model.
-    
+def epoch_run(
+    model: nn.Module, dataset: torch.utils.data.Dataset, device: torch.device
+) -> List[np.array]:
+    """Testing of the model.
+
     Parameters
     ----------
     model: nn.Module
@@ -36,29 +40,34 @@ def epoch_run(model, dataset, device):
         Dataset to be tested.
     device: torch.device
         Device to be used.
-    
-    Returns 
+
+    Returns
     -------
     np.array
         Predicted values.
-        
-    """ 
-      
-    model.to(device) 
+
+    """
+
+    model.to(device)
     model.eval()
     pred_all = []
-    
-    for batch_step in tqdm(range(len(dataset)) , desc="test"):
-        batch_x, _  = dataset[batch_step]
-        batch_x = batch_x.permute(0,2,1).to(device)
+
+    for batch_step in tqdm(range(len(dataset)), desc="test"):
+        batch_x, _ = dataset[batch_step]
+        batch_x = batch_x.permute(0, 2, 1).to(device)
         pred = model(batch_x)
         pred_all.append(pred.detach().numpy())
     pred_all = np.concatenate(pred_all, axis=0)
-    return pred_all
-    
-    
 
-def test(model, path: str = 'data/ptb', batch_size: int = 32, name: str = 'imle_net'):
+    return pred_all
+
+
+def test(
+    model: nn.Module,
+    path: str = "data/ptb",
+    batch_size: int = 32,
+    name: str = "imle_net",
+) -> None:
     """Data preprocessing and testing of the model.
 
     Parameters
@@ -71,55 +80,63 @@ def test(model, path: str = 'data/ptb', batch_size: int = 32, name: str = 'imle_
         Batch size. (default: 32)
     name: str, optional
         Name of the model. (default: 'imle_net')
-        
+
     """
-    
-    _, _, X_test_scale, y_test, _, _ = preprocess(path = path)
-    test_gen = DataGen(X_test_scale, y_test, batch_size = batch_size)
-   
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")    
+
+    _, _, X_test_scale, y_test, _, _ = preprocess(path=path)
+    test_gen = DataGen(X_test_scale, y_test, batch_size=batch_size)
+
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     pred = epoch_run(model, test_gen, device, name)
-    
-    roc_score = roc_auc_score(y_test, pred, average='macro')
+
+    roc_score = roc_auc_score(y_test, pred, average="macro")
     acc, mean_acc = Metrics(y_test, pred)
     class_auc = AUC(y_test, pred)
     summary = metric_summary(y_test, pred)
-    
-    print(f'class wise accuracy: {acc}')
-    print(f'accuracy: {mean_acc}')
-    print(f'roc_score : {roc_score}')
-    print(f'class wise AUC : {class_auc}')
-    print(f'class wise precision, recall, f1 score : {summary}')
+
+    print(f"class wise accuracy: {acc}")
+    print(f"accuracy: {mean_acc}")
+    print(f"roc_score : {roc_score}")
+    print(f"class wise AUC : {class_auc}")
+    print(f"class wise precision, recall, f1 score : {summary}")
 
     logs = dict()
-    logs['roc_score'] = roc_score
-    logs['mean_acc'] = mean_acc
-    logs['accuracy'] = acc
-    logs['class_auc'] = class_auc
-    logs['class_precision_recall_f1'] = summary
-    logs_path = os.path.join(os.getcwd(), 'logs', f'{name}_logs.json')
-    json.dump(logs, open(logs_path, 'w'))
-            
-            
-if __name__ == '__main__':
-    """Main function to run the training of the model.
-    """
-    
+    logs["roc_score"] = roc_score
+    logs["mean_acc"] = mean_acc
+    logs["accuracy"] = acc
+    logs["class_auc"] = class_auc
+    logs["class_precision_recall_f1"] = summary
+    logs_path = os.path.join(os.getcwd(), "logs", f"{name}_logs.json")
+    json.dump(logs, open(logs_path, "w"))
+
+
+if __name__ == "__main__":
+    """Main function to run the training of the model."""
+
     # Args parser
     parser = argparse.ArgumentParser()
-    parser.add_argument("--data_dir", type = str, default = 'data/ptb', help = "Ptb-xl dataset location")
-    parser.add_argument("--model", type = str, default = 'ecgnet', help = "Select the model to train. (ecgnet, resnet101)")
-    parser.add_argument("--batchsize", type = int, default = 32, help = "Batch size")
+    parser.add_argument(
+        "--data_dir", type=str, default="data/ptb", help="Ptb-xl dataset location"
+    )
+    parser.add_argument(
+        "--model",
+        type=str,
+        default="ecgnet",
+        help="Select the model to train. (ecgnet, resnet101)",
+    )
+    parser.add_argument("--batchsize", type=int, default=32, help="Batch size")
     args = parser.parse_args()
-    
-    if args.model == 'ecgnet':
+
+    if args.model == "ecgnet":
         from models.ECGNet import ECGNet
+
         model = ECGNet()
-    elif args.model == 'resnet101':
+    elif args.model == "resnet101":
         from models.resnet101 import resnet101
+
         model = resnet101()
-     
-    path_weights = os.path.join(os.getcwd(), 'checkpoints', f'{args.model}_weights.pt')   
+
+    path_weights = os.path.join(os.getcwd(), "checkpoints", f"{args.model}_weights.pt")
     model.load_state_dict(torch.load(path_weights))
-    
-    test(model, path = args.data_dir, batch_size = args.batchsize, name = args.model)
+
+    test(model, path=args.data_dir, batch_size=args.batchsize, name=args.model)

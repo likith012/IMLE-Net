@@ -10,7 +10,6 @@ params = {
     "conv_dropout": 0.2,
     "conv_num_skip": 2,
     "conv_increase_channels_at": 4,
-
     "learning_rate": 0.001,
-    "batch_size": 32
-    }
+    "batch_size": 32,
+}

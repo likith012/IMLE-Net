@@ -16,7 +16,9 @@ from utils.dataloader import DataGen
 from utils.metrics import Metrics, AUC, metric_summary
 
 
-def test(model, path: str = 'data/ptb', batch_size: int = 32, name: str = 'imle_net'):
+def test(
+    model, path: str = "data/ptb", batch_size: int = 32, name: str = "imle_net"
+) -> None:
     """Testing the model and logging metrics.
 
     Parameters
@@ -29,62 +31,68 @@ def test(model, path: str = 'data/ptb', batch_size: int = 32, name: str = 'imle_
         Batch size. (default: 32)
     name: str, optional
         Name of the model. (default: 'imle_net')
-        
+
     """
 
-    _, _, X_test_scale, y_test, _, _ = preprocess(path = path)
-    test_gen = DataGen(X_test_scale, y_test, batch_size = batch_size)
-    
+    _, _, X_test_scale, y_test, _, _ = preprocess(path=path)
+    test_gen = DataGen(X_test_scale, y_test, batch_size=batch_size)
+
     pred = model.predict(test_gen[0][0])
-    roc_score = roc_auc_score(y_test, pred, average='macro')
+    roc_score = roc_auc_score(y_test, pred, average="macro")
     acc, mean_acc = Metrics(y_test, pred)
     class_auc = AUC(y_test, pred)
     summary = metric_summary(y_test, pred)
-    
-    print(f'class wise accuracy: {acc}')
-    print(f'accuracy: {mean_acc}')
-    print(f'roc_score : {roc_score}')
-    print(f'class wise AUC : {class_auc}')
-    print(f'class wise precision, recall, f1 score : {summary}')
+
+    print(f"class wise accuracy: {acc}")
+    print(f"accuracy: {mean_acc}")
+    print(f"roc_score : {roc_score}")
+    print(f"class wise AUC : {class_auc}")
+    print(f"class wise precision, recall, f1 score : {summary}")
 
     logs = dict()
-    logs['roc_score'] = roc_score
-    logs['mean_acc'] = mean_acc
-    logs['accuracy'] = acc
-    logs['class_auc'] = class_auc
-    logs['class_precision_recall_f1'] = summary
-    logs_path = os.path.join(os.getcwd(), 'logs', f'{name}_logs.json')
-    json.dump(logs, open(logs_path, 'w'))
-    
+    logs["roc_score"] = roc_score
+    logs["mean_acc"] = mean_acc
+    logs["accuracy"] = acc
+    logs["class_auc"] = class_auc
+    logs["class_precision_recall_f1"] = summary
+    logs_path = os.path.join(os.getcwd(), "logs", f"{name}_logs.json")
+    json.dump(logs, open(logs_path, "w"))
 
-if __name__ == '__main__':
-    """Main function to test the trained model.
-    """
-    
+
+if __name__ == "__main__":
+    """Main function to test the trained model."""
+
     # Args parser
     parser = argparse.ArgumentParser()
-    parser.add_argument("--data_dir", type = str, default = 'data/ptb', help = "Ptb-xl dataset location")
-    parser.add_argument("--model", type = str, default = 'imle_net', help = "Select the model to test. (imle_net, mousavi, rajpurkar)")
-    parser.add_argument("--batchsize", type = int, default = 32, help = "Batch size")
+    parser.add_argument(
+        "--data_dir", type=str, default="data/ptb", help="Ptb-xl dataset location"
+    )
+    parser.add_argument(
+        "--model",
+        type=str,
+        default="imle_net",
+        help="Select the model to test. (imle_net, mousavi, rajpurkar)",
+    )
+    parser.add_argument("--batchsize", type=int, default=32, help="Batch size")
     args = parser.parse_args()
-    
-    if args.model == 'imle_net':
+
+    if args.model == "imle_net":
         from models.IMLENet import build_imle_net
         from configs.imle_config import Config
-        
+
         model = build_imle_net(Config())
-    elif args.model == 'mousavi':
+    elif args.model == "mousavi":
         from models.mousavi import build_mousavi
         from configs.mousavi_config import Config
-        
+
         model = build_mousavi(Config())
-    elif args.model == 'rajpurkar':
+    elif args.model == "rajpurkar":
         from models.rajpurkar import build_rajpurkar
         from configs.rajpurkar_config import params
-        
+
         model = build_rajpurkar(**params)
 
-    path_weights = os.path.join(os.getcwd(), 'checkpoints', f'{args.model}_weights.h5')    
+    path_weights = os.path.join(os.getcwd(), "checkpoints", f"{args.model}_weights.h5")
     model.load_weights(path_weights)
-    
-    test(model, path = args.data_dir, batch_size = args.batchsize, name = args.model)
+
+    test(model, path=args.data_dir, batch_size=args.batchsize, name=args.model)
