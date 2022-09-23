@@ -7,14 +7,13 @@ __email__ = "likith012@gmail.com"
 
 
 import logging, os, random, argparse
-from utils.tf_utils import set_tf_loglevel
+from utils.tf_utils import set_tf_loglevel, str2bool
 
 set_tf_loglevel(logging.ERROR)
 
 import json
 import numpy as np
 import tensorflow as tf
-import wandb
 
 from preprocessing.preprocess import preprocess
 from utils.dataloader import DataGen
@@ -31,7 +30,7 @@ def train(
     path: str = "data/ptb",
     batch_size: int = 32,
     epochs: int = 60,
-    loggr: wandb = None,
+    loggr = None,
     name: str = "imle_net",
 ) -> None:
     """Data preprocessing and training of the model.
@@ -80,8 +79,11 @@ def train(
         callbacks=callbacks,
         workers=5,
     )
-    json_logs = os.path.join(os.getcwd(), f"logs/{name}_train_logs.json")
-    json.dump(history.history, open(json_logs, "w"))
+    logs_path = os.path.join(os.getcwd(), "logs")
+    os.makedirs(logs_path, exist_ok=True)
+
+    with open(os.path.join(logs_path, f"{name}_train_logs.json"), 'w') as json_file:
+        json.dump(history.history, json_file)
 
 
 if __name__ == "__main__":
@@ -101,7 +103,7 @@ if __name__ == "__main__":
     parser.add_argument("--batchsize", type=int, default=32, help="Batch size")
     parser.add_argument("--epochs", type=int, default=60, help="Number of epochs")
     parser.add_argument(
-        "--loggr", type=bool, default=False, help="Enable wandb logging"
+        "--loggr", type=str2bool, default=False, help="Enable wandb logging"
     )
     args = parser.parse_args()
 
@@ -122,6 +124,8 @@ if __name__ == "__main__":
         model = build_rajpurkar(**params)
 
     if args.loggr:
+        import wandb
+
         wandb = wandb.init(
             project="IMLE-Net",
             name=args.model,
@@ -129,6 +133,8 @@ if __name__ == "__main__":
             save_code=True,
         )
         logger = wandb
+    else:
+        logger = None
 
     train(
         model,

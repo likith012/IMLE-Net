@@ -56,7 +56,7 @@ def epoch_run(
         batch_x, _ = dataset[batch_step]
         batch_x = batch_x.permute(0, 2, 1).to(device)
         pred = model(batch_x)
-        pred_all.append(pred.detach().numpy())
+        pred_all.append(pred.detach().cpu().numpy())
     pred_all = np.concatenate(pred_all, axis=0)
 
     return pred_all
@@ -87,7 +87,7 @@ def test(
     test_gen = DataGen(X_test_scale, y_test, batch_size=batch_size)
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    pred = epoch_run(model, test_gen, device, name)
+    pred = epoch_run(model, test_gen, device)
 
     roc_score = roc_auc_score(y_test, pred, average="macro")
     acc, mean_acc = Metrics(y_test, pred)
@@ -106,8 +106,11 @@ def test(
     logs["accuracy"] = acc
     logs["class_auc"] = class_auc
     logs["class_precision_recall_f1"] = summary
-    logs_path = os.path.join(os.getcwd(), "logs", f"{name}_test_logs.json")
-    json.dump(logs, open(logs_path, "w"))
+    logs_path = os.path.join(os.getcwd(), "logs")
+    os.makedirs(logs_path, exist_ok=True)
+
+    with open(os.path.join(logs_path, f"{name}_test_logs.json"), 'w') as json_file:
+        json.dump(logs, json_file)
 
 
 if __name__ == "__main__":

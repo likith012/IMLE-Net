@@ -55,8 +55,11 @@ def test(
     logs["accuracy"] = acc
     logs["class_auc"] = class_auc
     logs["class_precision_recall_f1"] = summary
-    logs_path = os.path.join(os.getcwd(), "logs", f"{name}_test_logs.json")
-    json.dump(logs, open(logs_path, "w"))
+    logs_path = os.path.join(os.getcwd(), "logs")
+    os.makedirs(logs_path, exist_ok=True)
+
+    with open(os.path.join(logs_path, f"{name}_test_logs.json"), 'w') as json_file:
+        json.dump(logs, json_file)
 
 
 if __name__ == "__main__":

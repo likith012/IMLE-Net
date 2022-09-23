@@ -21,3 +21,19 @@ def set_tf_loglevel(level) -> None:
     else:
         os.environ["TF_CPP_MIN_LOG_LEVEL"] = "0"
     logging.getLogger("tensorflow").setLevel(level)
+
+
+def str2bool(v):
+    """Converts a string to a boolean for argparser.
+
+    Parameters
+    ----------
+    v : str
+
+    """
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False

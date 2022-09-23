@@ -31,7 +31,7 @@ def Metrics(y_true: np.ndarray, y_scores: np.ndarray) -> Tuple[float, float]:
     for i in range(y_pred.shape[-1]):
         acc[i] = accuracy_score(y_true[:, i], y_pred[:, i])
 
-    return acc, np.mean(acc)
+    return acc.tolist(), np.mean(acc)
 
 
 def AUC(y_true: np.ndarray, y_pred: np.ndarray, verbose: bool = False) -> float:
@@ -66,7 +66,7 @@ def AUC(y_true: np.ndarray, y_pred: np.ndarray, verbose: bool = False) -> float:
                     f"Original error was: {str(e)}."
                 )
             aucs.append((y_pred == y_true).sum() / len(y_pred))
-    return np.array(aucs)
+    return aucs
 
 
 def multi_threshold_precision_recall(
@@ -150,8 +150,8 @@ def metric_summary(
     return (
         f_scores[np.nanargmax(f_scores)],
         auc,
-        f_scores,
-        average_precisions,
-        average_recalls,
-        thresholds,
+        f_scores.tolist(),
+        average_precisions.tolist(),
+        average_recalls.tolist(),
+        thresholds.tolist(),
     )

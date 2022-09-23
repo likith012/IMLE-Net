@@ -50,8 +50,11 @@ def dump_logs(train_results: tuple, test_results: tuple, name: str):
         "test_mean_accuracy": test_results[1],
         "test_roc_score": test_results[2],
     }
-    json_logs = os.path.join(os.getcwd(), "logs", f"{name}_train_logs.json")
-    json.dump(logs, open(json_logs, "w"))
+    logs_path = os.path.join(os.getcwd(), "logs")
+    os.makedirs(logs_path, exist_ok=True)
+
+    with open(os.path.join(logs_path, f"{name}_train_logs.json"), 'w') as json_file:
+        json.dump(logs, json_file)
 
 
 def train_epoch(
@@ -261,6 +264,8 @@ if __name__ == "__main__":
         model = resnet101()
 
     if args.loggr:
+        import wandb
+
         wandb = wandb.init(
             project="IMLE-Net",
             name=args.model,
@@ -268,6 +273,8 @@ if __name__ == "__main__":
             save_code=True,
         )
         logger = wandb
+    else:
+        logger = None
 
     train(
         model,
