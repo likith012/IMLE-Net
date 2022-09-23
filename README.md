@@ -155,13 +155,13 @@ ptbxl
 - Models implemented in `torch` are `ecgnet` and `resnet101`
 - To log the training and validation metrics on wandb, set `--log_wandb` flag to `True`
 - To train a particular model from scratch, `cd IMLE-Net`
-- To run `tensorflow` models, `python train.py --data_dir data/ptb --model imle_net --batchsize 32 --epochs 60 --loggr True`
-- To run `torch` models, `python torch_train.py --data_dir data/ptb --model ecgnet --batchsize 32 --epochs 60 --loggr True`
+- To run `tensorflow` models, `python train.py --model imle_net --batchsize 32 --epochs 60 --loggr False`
+- To run `torch` models, `python torch_train.py --model ecgnet --batchsize 32 --epochs 60 --loggr False`
 
 #### Testing the model
 - To test the model, `cd IMLE-Net`
-- To run `tensorflow` models, `python inference.py --data_dir data/ptb --model imle_net --batchsize 32`
-- To run `torch` models, `python torch_inference.py --data_dir data/ptb --model ecgnet --batchsize 32`
+- To run `tensorflow` models, `python inference.py --model imle_net --batchsize 32`
+- To run `torch` models, `python torch_inference.py --model ecgnet --batchsize 32`
 
 #### Logs and checkpoints
 - The logs are saved in `logs/` directory.

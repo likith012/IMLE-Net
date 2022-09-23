@@ -6,9 +6,11 @@ __version__ = "1.0.0"
 __email__ = "likith012@gmail.com"
 
 
-import os
-import random
-import argparse
+import logging, os, random, argparse
+from utils.tf_utils import set_tf_loglevel
+
+set_tf_loglevel(logging.ERROR)
+
 import json
 import numpy as np
 import tensorflow as tf
@@ -29,7 +31,7 @@ def train(
     path: str = "data/ptb",
     batch_size: int = 32,
     epochs: int = 60,
-    loggr: bool = False,
+    loggr: wandb = None,
     name: str = "imle_net",
 ) -> None:
     """Data preprocessing and training of the model.
@@ -44,8 +46,8 @@ def train(
         Batch size. (default: 32)
     epochs: int, optional
         Number of epochs. (default: 60)
-    loggr: bool, optional
-        To log wandb metrics. (default: False)
+    loggr: wandb, optional
+        To log wandb metrics. (default: None)
     name: str, optional
         Name of the model. (default: 'imle_net')
 
@@ -56,8 +58,8 @@ def train(
     val_gen = DataGen(X_val_scale, y_val, batch_size=batch_size)
 
     metric = "auc"
-    checkpoint_filepath = os.path.join(os.getcwd(), "checkpoints/")
-    os.makedir(checkpoint_filepath, exist_ok=True)
+    checkpoint_filepath = os.path.join(os.getcwd(), "checkpoints")
+    os.makedirs(checkpoint_filepath, exist_ok=True)
 
     checkpoint = model_checkpoint(
         checkpoint_filepath, val_gen, loggr=loggr, monitor=metric, name=name
@@ -78,7 +80,7 @@ def train(
         callbacks=callbacks,
         workers=5,
     )
-    json_logs = os.path.join(os.getcwd(), f"logs/{name}_logs.json")
+    json_logs = os.path.join(os.getcwd(), f"logs/{name}_train_logs.json")
     json.dump(history.history, open(json_logs, "w"))
 
 
@@ -126,13 +128,13 @@ if __name__ == "__main__":
             notes=f"Model: {args.model} with batch size: {args.batchsize} and epochs: {args.epochs}",
             save_code=True,
         )
-        args.logger = wandb
+        logger = wandb
 
     train(
         model,
         path=args.data_dir,
         batch_size=args.batchsize,
         epochs=args.epochs,
-        loggr=args.loggr,
+        loggr=logger,
         name=args.model,
     )

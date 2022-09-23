@@ -25,7 +25,7 @@ __author__ = "Likith Reddy"
 __version__ = "1.0.0"
 __email__ = "likith012@gmail.com"
 
-from typing import Tuple, Dict, List, Any
+from typing import Tuple
 
 import tensorflow as tf
 import tensorflow.keras.backend as K
@@ -118,7 +118,7 @@ class attention(tf.keras.layers.Layer):
 
         return K.sum(output, axis=1), a
 
-    def get_config(self) -> Dict[List[Any]]:
+    def get_config(self):
         """Returns the config of the attention layer. Useful for serialization."""
 
         base_config = super().get_config()

@@ -93,7 +93,7 @@ class model_checkpoint(tf.keras.callbacks.Callback):
             self.best_score = roc_auc
             self.model.save_weights(path)
 
-        if self.loggr:
+        if self.loggr is not None:
             self.loggr.log({"train_loss": logs["loss"], "epoch": epoch})
             self.loggr.log(
                 {"train_keras_auroc": logs.get(self.monitor), "epoch": epoch}

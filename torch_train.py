@@ -29,7 +29,7 @@ np.random.seed(seed)
 
 
 def dump_logs(train_results: tuple, test_results: tuple, name: str):
-    """Dumping of the logs to json.
+    """Dumps the performance logs to a json file.
 
     Parameters
     ----------
@@ -50,7 +50,7 @@ def dump_logs(train_results: tuple, test_results: tuple, name: str):
         "test_mean_accuracy": test_results[1],
         "test_roc_score": test_results[2],
     }
-    json_logs = os.path.join(os.getcwd(), logs, f"{name}_logs.json")
+    json_logs = os.path.join(os.getcwd(), "logs", f"{name}_train_logs.json")
     json.dump(logs, open(json_logs, "w"))
 
 
@@ -98,7 +98,6 @@ def train_epoch(
 
         pred = model(batch_x)
         pred_all.append(pred.cpu().detach().numpy())
-        print(batch_y.type(), pred.type())
         loss = loss_func(pred, batch_y)
         loss_all.append(loss.cpu().detach().item())
         optimizer.zero_grad()
@@ -107,12 +106,13 @@ def train_epoch(
         gt_all.extend(batch_y.cpu().detach().numpy())
 
     print("Epoch: {0}".format(epoch))
-    print("Train loss: ", np.mean(loss_all))
+    print("Train loss: ", np.mean(loss_all), end='\n'*2)
+    
     pred_all = np.concatenate(pred_all, axis=0)
     _, mean_acc = Metrics(np.array(gt_all), pred_all)
     roc_score = roc_auc_score(np.array(gt_all), pred_all, average="macro")
 
-    if loggr:
+    if loggr is not None:
         loggr.log({"train_mean_accuracy": mean_acc, "epoch": epoch})
         loggr.log({"train_roc_score": roc_score, "epoch": epoch})
         loggr.log({"train_loss": np.mean(loss_all), "epoch": epoch})
@@ -170,7 +170,7 @@ def test_epoch(
     _, mean_acc = Metrics(np.array(gt_all), pred_all)
     roc_score = roc_auc_score(np.array(gt_all), pred_all, average="macro")
 
-    if loggr:
+    if loggr is not None:
         loggr.log({"test_mean_accuracy": mean_acc, "epoch": epoch})
         loggr.log({"test_roc_score": roc_score, "epoch": epoch})
         loggr.log({"test_loss": np.mean(loss_all), "epoch": epoch})
@@ -183,8 +183,8 @@ def train(
     path: str = "data/ptb",
     batch_size: int = 32,
     epochs: int = 60,
-    loggr: bool = False,
-    name: str = "imle_net",
+    loggr: wandb = None,
+    name: str = "ecgnet",
 ) -> None:
     """Data preprocessing and training of the model.
 
@@ -198,10 +198,10 @@ def train(
         Batch size. (default: 32)
     epochs: int, optional
         Number of epochs. (default: 60)
-    loggr: bool, optional
-        To log wandb metrics. (default: False)
+    loggr: wandb, optional
+        To log wandb metrics. (default: None)
     name: str, optional
-        Name of the model. (default: 'imle_net')
+        Name of the model. (default: 'ecgnet')
 
     """
 
@@ -209,6 +209,8 @@ def train(
     train_gen = DataGen(X_train_scale, y_train, batch_size=batch_size)
     val_gen = DataGen(X_val_scale, y_val, batch_size=batch_size)
 
+    checkpoint_filepath = os.path.join(os.getcwd(), "checkpoints")
+    os.makedirs(checkpoint_filepath, exist_ok=True)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model.to(device)
 
@@ -223,7 +225,7 @@ def train(
         test_results = test_epoch(model, loss_func, val_gen, epoch, device, loggr=loggr)
 
         if epoch > 5 and best_score < test_results[2]:
-            save_path = os.path.join(os.getcwd(), "checkpoints/", f"{name}_weights.pt")
+            save_path = os.path.join(checkpoint_filepath, f"{name}_weights.pt")
             torch.save(model.state_dict(), save_path)
             dump_logs(train_results, test_results, name)
 
@@ -265,13 +267,13 @@ if __name__ == "__main__":
             notes=f"Model: {args.model} with batch size: {args.batchsize} and epochs: {args.epochs}",
             save_code=True,
         )
-        args.logger = wandb
+        logger = wandb
 
     train(
         model,
         path=args.data_dir,
         batch_size=args.batchsize,
         epochs=args.epochs,
-        loggr=args.loggr,
+        loggr=logger,
         name=args.model,
     )

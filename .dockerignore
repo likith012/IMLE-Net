@@ -101,11 +101,9 @@ venv/
 __pycache__/
 wandb/
 .ipynb_checkpoints/
-saves/pytorch_model.bin
 wandb/
 /*/__pycache__/
 .git/
 .gitignore
 LICENSE
 logs/
-checkpoints/

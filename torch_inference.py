@@ -106,7 +106,7 @@ def test(
     logs["accuracy"] = acc
     logs["class_auc"] = class_auc
     logs["class_precision_recall_f1"] = summary
-    logs_path = os.path.join(os.getcwd(), "logs", f"{name}_logs.json")
+    logs_path = os.path.join(os.getcwd(), "logs", f"{name}_test_logs.json")
     json.dump(logs, open(logs_path, "w"))
 
 

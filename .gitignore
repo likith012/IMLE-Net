@@ -134,7 +134,8 @@ dmypy.json
 .jupyter/
 .pytest_cache/
 .pyenv/
-/data/ptb/
+data/ptb/
+data/*.zip
 __pycache__/
 logs/
 checkpoints/

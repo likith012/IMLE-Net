@@ -11,17 +11,17 @@ __version__ = "1.0.0"
 __email__ = "likith012@gmail.com"
 
 
+import os
+from typing import Tuple
+
 import numpy as np
 import pandas as pd
-import wfdb
-import ast
+import wfdb, ast
 from pathlib import Path
-import os
-from typing import Tuple, List, Union
-
 from sklearn.preprocessing import StandardScaler, MultiLabelBinarizer
 from sklearn.utils import shuffle
 from sklearn.preprocessing import StandardScaler
+
 
 
 def apply_scaler(inputs: np.array, scaler: StandardScaler) -> np.array:
@@ -64,6 +64,8 @@ def preprocess(path: str = "data/ptb") -> Tuple[np.array]:
 
     """
 
+    print("Loading dataset...", end='\n'*2)
+
     path = os.path.join(os.getcwd(), Path(path))
     Y = pd.read_csv(os.path.join(path, "ptbxl_database.csv"), index_col="ecg_id")
     data = np.array([wfdb.rdsamp(os.path.join(path, f))[0] for f in Y.filename_lr])
@@ -92,6 +94,8 @@ def preprocess(path: str = "data/ptb") -> Tuple[np.array]:
     X_data = data[Y["superdiagnostic_len"] >= 1]
     Y_data = Y[Y["superdiagnostic_len"] >= 1]
 
+    print("Preprocessing dataset...", end='\n'*2)
+
     mlb = MultiLabelBinarizer()
     mlb.fit(Y_data["diagnostic_superclass"])
     y = mlb.transform(Y_data["diagnostic_superclass"].values)
@@ -105,6 +109,7 @@ def preprocess(path: str = "data/ptb") -> Tuple[np.array]:
 
     X_test = X_data[Y_data.strat_fold == 10]
     y_test = y[Y_data.strat_fold == 10]
+
     del X_data, Y_data, y
 
     # Standardization
