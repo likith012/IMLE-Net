@@ -274,6 +274,7 @@ def build_rajpurkar(**params) -> tf.keras.Model:
     model = tf.keras.models.Model(inputs=[inputs], outputs=[output])
     if params.get("compile", True):
         add_compile(model, **params)
+    model._name = "Rajpurkar"
     print(model.summary())
 
     return model

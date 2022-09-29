@@ -56,7 +56,7 @@ def train(
     train_gen = DataGen(X_train_scale, y_train, batch_size=batch_size)
     val_gen = DataGen(X_val_scale, y_val, batch_size=batch_size)
 
-    metric = "auc"
+    metric = "val_auc"
     checkpoint_filepath = os.path.join(os.getcwd(), "checkpoints")
     os.makedirs(checkpoint_filepath, exist_ok=True)
 
@@ -66,9 +66,10 @@ def train(
     stop_early = tf.keras.callbacks.EarlyStopping(
         monitor=metric,
         min_delta=0.001,
-        patience=10,
-        mode="auto",
+        patience=3,
+        mode="max",
         restore_best_weights=True,
+        verbose=1,
     )
 
     callbacks = [checkpoint, stop_early]
@@ -77,7 +78,6 @@ def train(
         epochs=epochs,
         validation_data=val_gen,
         callbacks=callbacks,
-        workers=5,
     )
     logs_path = os.path.join(os.getcwd(), "logs")
     os.makedirs(logs_path, exist_ok=True)

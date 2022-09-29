@@ -236,6 +236,7 @@ def build_imle_net(config) -> tf.keras.Model:
         loss=tf.keras.losses.BinaryCrossentropy(),
         metrics=["accuracy", tf.keras.metrics.AUC(multi_label=True)],
     )
+    model._name = "IMLE-Net"
     print(model.summary())
 
     return model
