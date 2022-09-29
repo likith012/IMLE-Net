@@ -26,16 +26,19 @@ from tensorflow.keras.layers import (
     Activation,
     Dropout,
     Input,
+    Permute,
 )
 
 
-def _bn_relu(layer: tf.Tensor, dropout: int = 0, **params) -> tf.Tensor:
+def _bn_relu(layer: tf.Tensor, dropout: float = 0., **params) -> tf.Tensor:
     """Helper to build a BN -> relu block with dropout
 
     Parameters
     ----------
     layer: tf.Tensor
         The input layer to the block.
+    dropout: float, optional
+        The dropout rate.
 
     Returns
     -------
@@ -68,7 +71,7 @@ def add_conv_weight(
         The length of the filters.
     num_filters: int
         The number of filters to the 1D convolution.
-    subsample_length: int
+    subsample_length: int, optional
         The length of the the strides to the 1D convolution.
 
     Returns
@@ -211,7 +214,7 @@ def add_resnet_layers(layer: tf.Tensor, **params) -> tf.Tensor:
     return layer
 
 
-def add_output_layer(layer: tf.Tensor) -> tf.Tensor:
+def add_output_layer(layer: tf.Tensor, **params) -> tf.Tensor:
     """Adds the output layer to the network."""
     layer = Flatten()(layer)
     layer = Dense(5)(layer)
@@ -260,20 +263,24 @@ def build_rajpurkar(**params) -> tf.keras.Model:
     input_channels = 12
 
     inputs = Input(
-        shape=(signal_len, input_channels),
+        shape=(input_channels, signal_len, 1),
         dtype="float32",
         name="inputs",
         batch_size=None,
     )
+    x = K.reshape(inputs, (-1, input_channels, signal_len))
+    x = Permute((2, 1))(x)
+    
     if params.get("is_regular_conv", False):
-        layer = add_conv_layers(inputs, **params)
+        layer = add_conv_layers(x, **params)
     else:
-        layer = add_resnet_layers(inputs, **params)
+        layer = add_resnet_layers(x, **params)
 
     output = add_output_layer(layer, **params)
     model = tf.keras.models.Model(inputs=[inputs], outputs=[output])
     if params.get("compile", True):
         add_compile(model, **params)
+
     model._name = "Rajpurkar"
     print(model.summary())
 

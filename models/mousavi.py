@@ -22,6 +22,7 @@ from tensorflow.keras.layers import (
     Flatten,
     Bidirectional,
     LSTM,
+    Permute,
 )
 
 
@@ -40,7 +41,9 @@ def build_mousavi(config) -> tf.keras.Model:
 
     """
 
-    inputs = Input(shape=(config.signal_len, config.input_channels), batch_size=None)
+    inputs = Input(shape=(config.input_channels, config.signal_len, 1), batch_size=None)
+    x = K.reshape(inputs, (-1, config.input_channels, config.signal_len))
+    x = Permute((2, 1))(x)
     x = K.reshape(inputs, (-1, config.beat_len, config.input_channels))
 
     x = Conv1D(

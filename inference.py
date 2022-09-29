@@ -8,7 +8,8 @@ __email__ = "likith012@gmail.com"
 import argparse
 import os
 import json
-
+from tqdm import tqdm
+import numpy as np
 from sklearn.metrics import roc_auc_score
 
 from preprocessing.preprocess import preprocess
@@ -37,11 +38,19 @@ def test(
     _, _, X_test_scale, y_test, _, _ = preprocess(path=path)
     test_gen = DataGen(X_test_scale, y_test, batch_size=batch_size)
 
-    pred = model.predict(test_gen[0][0])
-    roc_score = roc_auc_score(y_test, pred, average="macro")
-    acc, mean_acc = Metrics(y_test, pred)
-    class_auc = AUC(y_test, pred)
-    summary = metric_summary(y_test, pred)
+    pred_all = []
+    gt_all = []
+
+    for X, y in tqdm(test_gen, desc="Testing Model"):
+        pred = model.predict(X)
+        pred_all.extend(pred.tolist())
+        gt_all.extend(y.tolist())
+
+    pred_all, gt_all = np.array(pred_all), np.array(gt_all)
+    roc_score = roc_auc_score(gt_all, pred_all, average="macro")
+    acc, mean_acc = Metrics(gt_all, pred_all)
+    class_auc = AUC(gt_all, pred_all)
+    summary = metric_summary(gt_all, pred_all)
 
     print(f"class wise accuracy: {acc}")
     print(f"accuracy: {mean_acc}")

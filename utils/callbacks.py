@@ -77,7 +77,6 @@ class model_checkpoint(tf.keras.callbacks.Callback):
 
         for i in range(test_len):
             X, y = self.test_data[i][0], self.test_data[i][1]
-
             temp_score = self.model.predict(X)
             score.append(temp_score)
             gt.append(y)

@@ -65,8 +65,8 @@ def train(
     )
     stop_early = tf.keras.callbacks.EarlyStopping(
         monitor=metric,
-        min_delta=0.001,
-        patience=3,
+        min_delta=0.0001,
+        patience=10,
         mode="max",
         restore_best_weights=True,
         verbose=1,
