@@ -160,12 +160,18 @@ ptbxl
 
 #### Testing the model
 - To test the model, `cd IMLE-Net`
-- To run `tensorflow` models, `python inference.py --model imle_net --batchsize 32`
-- To run `torch` models, `python torch_inference.py --model ecgnet --batchsize 32`
+- To run `tensorflow` models, `python test.py --model imle_net --batchsize 32`
+- To run `torch` models, `python torch_test.py --model ecgnet --batchsize 32`
+
+#### Reimplementation and visualization
+- It's a three step process, first train the model on main dataset with `sub` set to `False`.
+- Second, train the model on sub-diseases of MI with `sub` set to `True`.
+- Third, for inference and visualization run, `python inference.py --dir filepath`
 
 #### Logs and checkpoints
 - The logs are saved in `logs/` directory.
 - The model checkpoints are saved in `checkpoints/` directory.
+- The visualizations are saved in `results/` directory.
 
 ## Getting the weights :weight_lifting:
 
