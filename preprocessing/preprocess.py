@@ -23,7 +23,6 @@ from sklearn.utils import shuffle
 from sklearn.preprocessing import StandardScaler
 
 
-
 def apply_scaler(inputs: np.array, scaler: StandardScaler) -> np.array:
     """Applies standardization to each individual ECG signal.
 

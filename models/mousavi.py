@@ -83,7 +83,7 @@ def build_mousavi(config, sub=False) -> tf.keras.Model:
         loss=tf.keras.losses.BinaryCrossentropy(),
         metrics=["accuracy", tf.keras.metrics.AUC(multi_label=True)],
     )
-        model._name = "Rajpurkar"
+        model._name = "Mousavi"
         print(model.summary())
     
     return model

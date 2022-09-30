@@ -54,8 +54,12 @@ def train(
     sub_disease: bool, optional
         If true, the model is trained with subdisease of MI with pretrained weights from main dataset. (default: False)
 
-    """
+    """   
 
+    metric = "val_auc"
+    checkpoint_filepath = os.path.join(os.getcwd(), "checkpoints")
+    os.makedirs(checkpoint_filepath, exist_ok=True)
+    
     if sub_disease:
         X_train, y_train, X_test, y_test = preprocess_sub_disease(path='data/ptb')
         train_gen = DataGen(X_train, y_train, batch_size=batch_size)
@@ -70,12 +74,6 @@ def train(
         checkpoint = model_checkpoint(
         checkpoint_filepath, val_gen, loggr=loggr, monitor=metric, name=name, sub=sub_disease
     )
-
-    metric = "val_auc"
-    checkpoint_filepath = os.path.join(os.getcwd(), "checkpoints")
-    os.makedirs(checkpoint_filepath, exist_ok=True)
-
-    
     stop_early = tf.keras.callbacks.EarlyStopping(
         monitor=metric,
         min_delta=0.0001,
@@ -89,12 +87,15 @@ def train(
     if sub_disease:
         try:
             path_weights = os.path.join(os.getcwd(), "checkpoints", f"{name}_weights.h5")
-        except:
-            print("Model weights file not found, please train the model on main dataset first.")
-        else:
             model.load_weights(path_weights)
+        except:
+            raise Exception("Model weights file not found, please train the model on main dataset first.")
 
-        outputs = tf.keras.layers.Dense(3, activation='softmax')(model.layers[-2].output[0])
+        if name == "imle_net":
+            outputs = tf.keras.layers.Dense(3, activation='softmax')(model.layers[-2].output[0])
+        else: 
+            outputs = tf.keras.layers.Dense(3, activation='softmax')(model.layers[-2].output)
+
         model = tf.keras.models.Model(inputs = model.input, outputs = outputs)
         model.compile(optimizer = tf.keras.optimizers.Adam(learning_rate = 0.001), loss = tf.keras.losses.CategoricalCrossentropy(), metrics = ['accuracy', tf.keras.metrics.AUC()])
         model._name = f"{name}-sub-diagnostic"

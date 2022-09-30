@@ -15,9 +15,8 @@ from typing import Tuple
 
 import numpy as np
 import pandas as pd
-import wfdb, ast
+import wfdb, ast, warnings
 from pathlib import Path
-import warnings
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.utils import shuffle
 from sklearn.preprocessing import StandardScaler

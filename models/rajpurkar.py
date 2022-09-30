@@ -217,8 +217,8 @@ def add_resnet_layers(layer: tf.Tensor, **params) -> tf.Tensor:
 def add_output_layer(layer: tf.Tensor, **params) -> tf.Tensor:
     """Adds the output layer to the network."""
     layer = Flatten()(layer)
-    layer = Dense(5)(layer)
-    return Activation("sigmoid")(layer)
+    layer = Dense(5, activation="sigmoid")(layer)
+    return layer
 
 
 def add_compile(model: tf.keras.Model, **params) -> tf.keras.Model:

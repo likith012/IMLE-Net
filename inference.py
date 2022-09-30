@@ -123,7 +123,6 @@ def build_scores(model, data):
     fig.show()
 
 
-
 if __name__ == "__main__":
     """Main function to test the trained model."""
 
