@@ -106,11 +106,10 @@ class model_checkpoint(tf.keras.callbacks.Callback):
                 {"train_keras_auroc": logs.get(self.monitor), "epoch": epoch}
             )
 
-            self.loggr.log({"test_loss": logs["val_loss"], "epoch": epoch})
-            self.loggr.log({"test_keras_auroc": logs["val_auc"], "epoch": epoch})
-
-            self.loggr.log({"test_roc_score": roc_auc, "epoch": epoch})
-            self.loggr.log({"test_accuracy_score": accuracy, "epoch": epoch})
+            self.loggr.log({"val_loss": logs["val_loss"], "epoch": epoch})
+            self.loggr.log({"val_keras_auroc": logs["val_auc"], "epoch": epoch})
+            self.loggr.log({"val_roc_score": roc_auc, "epoch": epoch})
+            self.loggr.log({"val_accuracy_score": accuracy, "epoch": epoch})
 
         logs["val_roc_auc"] = roc_auc
         logs["val_accuracy_score"] = accuracy
