@@ -3,10 +3,9 @@
 The `PTB-XL` dataset can be downloaded from the [Physionet website](https://physionet.org/content/ptb-xl/1.0.1/).
 
 ## Getting started :ninja:
-
-* Download the dataset  using the terminal `wget -r -N -c -np https://physionet.org/files/ptb-xl/1.0.1/`
-* Rename the directory of the dataset to `ptb`
-* Copy the `ptb` directory to the `data/ptb`
+* To prepare the dataset, `cd IMLE-Net`
+* Download the dataset using the terminal `wget -r -N -c -np -nH --cut-dirs 4 -O data/ptb.zip https://physionet.org/static/published-projects/ptb-xl/ptb-xl-a-large-publicly-available-electrocardiography-dataset-1.0.2.zip`
+* Unzip and rename the dataset, `unzip data/ptb.zip -d data/ && mv data/ptb-xl-a-large-publicly-available-electrocardiography-dataset-1.0.2 data/ptb && rm data/ptb.zip`
 
 ## Description :information_desk_person:
 
