@@ -67,7 +67,7 @@ def test(
     logs_path = os.path.join(os.getcwd(), "logs")
     os.makedirs(logs_path, exist_ok=True)
 
-    with open(os.path.join(logs_path, f"{name}_test_logs.json"), 'w') as json_file:
+    with open(os.path.join(logs_path, f"{name}_test_logs.json"), "w") as json_file:
         json.dump(logs, json_file)
 
 

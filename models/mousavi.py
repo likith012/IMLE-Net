@@ -76,14 +76,14 @@ def build_mousavi(config, sub=False) -> tf.keras.Model:
     x = Dense(128, activation="relu")(x)
     outputs = Dense(config.classes, activation="sigmoid")(x)
 
-    model = tf.keras.models.Model(inputs=inputs, outputs=outputs) 
+    model = tf.keras.models.Model(inputs=inputs, outputs=outputs)
     if not sub:
         model.compile(
-        optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
-        loss=tf.keras.losses.BinaryCrossentropy(),
-        metrics=["accuracy", tf.keras.metrics.AUC(multi_label=True)],
-    )
+            optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
+            loss=tf.keras.losses.BinaryCrossentropy(),
+            metrics=["accuracy", tf.keras.metrics.AUC(multi_label=True)],
+        )
         model._name = "Mousavi"
         print(model.summary())
-    
+
     return model

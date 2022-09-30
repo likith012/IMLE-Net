@@ -30,7 +30,7 @@ from tensorflow.keras.layers import (
 )
 
 
-def _bn_relu(layer: tf.Tensor, dropout: float = 0., **params) -> tf.Tensor:
+def _bn_relu(layer: tf.Tensor, dropout: float = 0.0, **params) -> tf.Tensor:
     """Helper to build a BN -> relu block with dropout
 
     Parameters
@@ -272,7 +272,7 @@ def build_rajpurkar(sub=False, **params) -> tf.keras.Model:
     )
     x = K.reshape(inputs, (-1, input_channels, signal_len))
     x = Permute((2, 1))(x)
-    
+
     if params.get("is_regular_conv", False):
         layer = add_conv_layers(x, **params)
     else:

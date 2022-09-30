@@ -63,7 +63,7 @@ def preprocess(path: str = "data/ptb") -> Tuple[np.array]:
 
     """
 
-    print("Loading dataset...", end='\n'*2)
+    print("Loading dataset...", end="\n" * 2)
 
     path = os.path.join(os.getcwd(), Path(path))
     Y = pd.read_csv(os.path.join(path, "ptbxl_database.csv"), index_col="ecg_id")
@@ -93,7 +93,7 @@ def preprocess(path: str = "data/ptb") -> Tuple[np.array]:
     X_data = data[Y["superdiagnostic_len"] >= 1]
     Y_data = Y[Y["superdiagnostic_len"] >= 1]
 
-    print("Preprocessing dataset...", end='\n'*2)
+    print("Preprocessing dataset...", end="\n" * 2)
 
     mlb = MultiLabelBinarizer()
     mlb.fit(Y_data["diagnostic_superclass"])

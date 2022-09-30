@@ -53,7 +53,7 @@ def dump_logs(train_results: tuple, test_results: tuple, name: str):
     logs_path = os.path.join(os.getcwd(), "logs")
     os.makedirs(logs_path, exist_ok=True)
 
-    with open(os.path.join(logs_path, f"{name}_train_logs.json"), 'w') as json_file:
+    with open(os.path.join(logs_path, f"{name}_train_logs.json"), "w") as json_file:
         json.dump(logs, json_file)
 
 
@@ -109,8 +109,8 @@ def train_epoch(
         gt_all.extend(batch_y.cpu().detach().numpy())
 
     print("Epoch: {0}".format(epoch))
-    print("Train loss: ", np.mean(loss_all), end='\n'*2)
-    
+    print("Train loss: ", np.mean(loss_all), end="\n" * 2)
+
     pred_all = np.concatenate(pred_all, axis=0)
     _, mean_acc = Metrics(np.array(gt_all), pred_all)
     roc_score = roc_auc_score(np.array(gt_all), pred_all, average="macro")

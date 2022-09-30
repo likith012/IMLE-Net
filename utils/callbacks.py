@@ -91,7 +91,7 @@ class model_checkpoint(tf.keras.callbacks.Callback):
         roc_auc = roc_auc_score(gt, score, average="macro")
         _, accuracy = Metrics(gt, score)
 
-        if self.sub:    
+        if self.sub:
             temp_path = f"{self.name}_sub_diagnostic_weights.h5"
         else:
             temp_path = f"{self.name}_weights.h5"
