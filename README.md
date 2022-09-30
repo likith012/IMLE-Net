@@ -43,7 +43,7 @@ and usability.
 
 - A model that learns patterns at the beat, rhythm, and channel level with high accuracy💯.
 - An interpretable model that gives an explainability at the beat, rhythm and  channel level💥.
-- Complete preprocessing pipeline, training and inference codes are available.
+- Complete preprocessing pipeline, training and inference codes are provided.
 - Training weights are available to try out the model.
 
 ## Results :man_dancing:
