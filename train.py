@@ -16,6 +16,7 @@ import numpy as np
 import tensorflow as tf
 
 from preprocessing.preprocess import preprocess
+from preprocessing.sub_preprocess import preprocess_sub_disease
 from utils.dataloader import DataGen
 from utils.callbacks import model_checkpoint
 
@@ -32,6 +33,7 @@ def train(
     epochs: int = 60,
     loggr = None,
     name: str = "imle_net",
+    sub_disease: bool = False,
 ) -> None:
     """Data preprocessing and training of the model.
 
@@ -49,20 +51,31 @@ def train(
         To log wandb metrics. (default: None)
     name: str, optional
         Name of the model. (default: 'imle_net')
+    sub_disease: bool, optional
+        If true, the model is trained with subdisease of MI with pretrained weights from main dataset. (default: False)
 
     """
 
-    X_train_scale, y_train, _, _, X_val_scale, y_val = preprocess(path=path)
-    train_gen = DataGen(X_train_scale, y_train, batch_size=batch_size)
-    val_gen = DataGen(X_val_scale, y_val, batch_size=batch_size)
+    if sub_disease:
+        X_train, y_train, X_test, y_test = preprocess_sub_disease(path='data/ptb')
+        train_gen = DataGen(X_train, y_train, batch_size=batch_size)
+        test_gen = DataGen(X_test, y_test, batch_size=batch_size)
+        checkpoint = model_checkpoint(
+        checkpoint_filepath, test_gen, loggr=loggr, monitor=metric, name=name, sub=sub_disease
+    )
+    else:
+        X_train_scale, y_train, _, _, X_val_scale, y_val = preprocess(path=path)
+        train_gen = DataGen(X_train_scale, y_train, batch_size=batch_size)
+        val_gen = DataGen(X_val_scale, y_val, batch_size=batch_size)
+        checkpoint = model_checkpoint(
+        checkpoint_filepath, val_gen, loggr=loggr, monitor=metric, name=name, sub=sub_disease
+    )
 
     metric = "val_auc"
     checkpoint_filepath = os.path.join(os.getcwd(), "checkpoints")
     os.makedirs(checkpoint_filepath, exist_ok=True)
 
-    checkpoint = model_checkpoint(
-        checkpoint_filepath, val_gen, loggr=loggr, monitor=metric, name=name
-    )
+    
     stop_early = tf.keras.callbacks.EarlyStopping(
         monitor=metric,
         min_delta=0.0001,
@@ -71,19 +84,44 @@ def train(
         restore_best_weights=True,
         verbose=1,
     )
-
     callbacks = [checkpoint, stop_early]
-    history = model.fit(
+
+    if sub_disease:
+        try:
+            path_weights = os.path.join(os.getcwd(), "checkpoints", f"{name}_weights.h5")
+        except:
+            print("Model weights file not found, please train the model on main dataset first.")
+        else:
+            model.load_weights(path_weights)
+
+        outputs = tf.keras.layers.Dense(3, activation='softmax')(model.layers[-2].output[0])
+        model = tf.keras.models.Model(inputs = model.input, outputs = outputs)
+        model.compile(optimizer = tf.keras.optimizers.Adam(learning_rate = 0.001), loss = tf.keras.losses.CategoricalCrossentropy(), metrics = ['accuracy', tf.keras.metrics.AUC()])
+        model._name = f"{name}-sub-diagnostic"
+        print(model.summary())
+
+        history = model.fit(
         train_gen,
         epochs=epochs,
-        validation_data=val_gen,
+        validation_data=test_gen,
         callbacks=callbacks,
-    )
+        )
+    else:  
+        history = model.fit(
+            train_gen,
+            epochs=epochs,
+            validation_data=val_gen,
+            callbacks=callbacks,
+        )
     logs_path = os.path.join(os.getcwd(), "logs")
     os.makedirs(logs_path, exist_ok=True)
 
-    with open(os.path.join(logs_path, f"{name}_train_logs.json"), 'w') as json_file:
-        json.dump(history.history, json_file)
+    if sub_disease:
+        with open(os.path.join(logs_path, f"{name}_sub_disease.json"), 'w') as json_file:
+            json.dump(history.history, json_file)
+    else:
+        with open(os.path.join(logs_path, f"{name}_train_logs.json"), 'w') as json_file:
+            json.dump(history.history, json_file)
 
 
 if __name__ == "__main__":
@@ -105,23 +143,26 @@ if __name__ == "__main__":
     parser.add_argument(
         "--loggr", type=str2bool, default=False, help="Enable wandb logging"
     )
+    parser.add_argument(
+        "--sub", type=str2bool, default=False, help="Enable sub-diagnostic diseases of MI classification"
+    )
     args = parser.parse_args()
 
     if args.model == "imle_net":
         from models.IMLENet import build_imle_net
         from configs.imle_config import Config
 
-        model = build_imle_net(Config())
+        model = build_imle_net(Config(), sub=args.sub)
     elif args.model == "mousavi":
         from models.mousavi import build_mousavi
         from configs.mousavi_config import Config
 
-        model = build_mousavi(Config())
+        model = build_mousavi(Config(), sub=args.sub)
     elif args.model == "rajpurkar":
         from models.rajpurkar import build_rajpurkar
         from configs.rajpurkar_config import params
 
-        model = build_rajpurkar(**params)
+        model = build_rajpurkar(sub=args.sub, **params)
 
     if args.loggr:
         import wandb
@@ -143,4 +184,5 @@ if __name__ == "__main__":
         epochs=args.epochs,
         loggr=logger,
         name=args.model,
+        sub_disease=args.sub,
     )

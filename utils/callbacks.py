@@ -33,6 +33,8 @@ class model_checkpoint(tf.keras.callbacks.Callback):
         Metric to monitor. (default: 'loss')
     name: str, optional
         Name of the model. (default: 'imle_net')
+    sub: bool, optional
+        For sub-diagnostic diseases of MI. (default: False)
 
     Methods
     -------
@@ -48,6 +50,7 @@ class model_checkpoint(tf.keras.callbacks.Callback):
         loggr: bool = False,
         monitor: str = "loss",
         name: str = "imle_net",
+        sub: bool = False,
         **kwargs,
     ) -> None:
 
@@ -57,6 +60,7 @@ class model_checkpoint(tf.keras.callbacks.Callback):
         self.test_data = test_data
         self.loggr = loggr
         self.name = name
+        self.sub = sub
         self.best_score = 0.0
 
     def on_epoch_end(self, epoch: int, logs: dict = {}) -> None:
@@ -86,7 +90,10 @@ class model_checkpoint(tf.keras.callbacks.Callback):
         roc_auc = roc_auc_score(gt, score, average="macro")
         _, accuracy = Metrics(gt, score)
 
-        temp_path = f"{self.name}_weights.h5"
+        if self.sub:    
+            temp_path = f"{self.name}_sub_diagnostic_weights.h5"
+        else:
+            temp_path = f"{self.name}_weights.h5"
         path = os.path.join(self.savepath, temp_path)
 
         if epoch > 5 and self.best_score < roc_auc:

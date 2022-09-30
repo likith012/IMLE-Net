@@ -187,13 +187,15 @@ def residual_block(
     return out
 
 
-def build_imle_net(config) -> tf.keras.Model:
+def build_imle_net(config, sub=False) -> tf.keras.Model:
     """Builds the IMLE-Net model.
 
     Parameters
     ----------
     config: imle_config
         The configs for building the model.
+    sub: bool, optional
+        For sub-diagnostic diseases of MI. (default: False)
 
     Returns
     -------
@@ -230,13 +232,14 @@ def build_imle_net(config) -> tf.keras.Model:
     x, _ = attention(name="channel_att")(x)
     outputs = Dense(config.classes, activation="sigmoid")(x)
 
-    model = tf.keras.models.Model(inputs=inputs, outputs=outputs)
-    model.compile(
+    model = tf.keras.models.Model(inputs=inputs, outputs=outputs)   
+    if not sub:
+        model.compile(
         optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
         loss=tf.keras.losses.BinaryCrossentropy(),
         metrics=["accuracy", tf.keras.metrics.AUC(multi_label=True)],
-    )
-    model._name = "IMLE-Net"
-    print(model.summary())
+                    )
+        model._name = "Rajpurkar"
+        print(model.summary())
 
     return model

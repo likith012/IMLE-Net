@@ -244,11 +244,13 @@ def add_compile(model: tf.keras.Model, **params) -> tf.keras.Model:
     )
 
 
-def build_rajpurkar(**params) -> tf.keras.Model:
+def build_rajpurkar(sub=False, **params) -> tf.keras.Model:
     """Builds the network with the given parameters.
 
     Parameters
     ----------
+    sub: bool, optional
+        For sub-diagnostic diseases of MI. (default: False)
     params: dict
         The parameters to build the network.
 
@@ -278,10 +280,11 @@ def build_rajpurkar(**params) -> tf.keras.Model:
 
     output = add_output_layer(layer, **params)
     model = tf.keras.models.Model(inputs=[inputs], outputs=[output])
-    if params.get("compile", True):
-        add_compile(model, **params)
 
-    model._name = "Rajpurkar"
-    print(model.summary())
+    if not sub:
+        if params.get("compile", True):
+            add_compile(model, **params)
+        model._name = "Rajpurkar"
+        print(model.summary())
 
     return model

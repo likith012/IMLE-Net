@@ -1,6 +1,6 @@
 """Preprocessing pipeline for the dataset.
 
-This file can also be imported as a module and contains the following functions:
+This file can is imported as a module and contains the following functions:
 
     * apply_scaler - Applies standard scaler to an ECG signal.
     * preprocess - Preprocesses the dataset.
@@ -110,7 +110,7 @@ def preprocess(path: str = "data/ptb") -> Tuple[np.array]:
     X_test = X_data[Y_data.strat_fold == 10]
     y_test = y[Y_data.strat_fold == 10]
 
-    del X_data, Y_data, y
+    del X_data, Y_data, y, data
 
     # Standardization
     scaler = StandardScaler()

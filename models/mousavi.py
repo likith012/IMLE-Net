@@ -26,13 +26,15 @@ from tensorflow.keras.layers import (
 )
 
 
-def build_mousavi(config) -> tf.keras.Model:
+def build_mousavi(config, sub=False) -> tf.keras.Model:
     """Builds Sajad Mousavi's model.
 
     Parameters
     ----------
     config: mousavi_config
         The configs for building the model.
+    sub: bool, optional
+        For sub-diagnostic diseases of MI. (default: False)
 
     Returns
     -------
@@ -74,13 +76,14 @@ def build_mousavi(config) -> tf.keras.Model:
     x = Dense(128, activation="relu")(x)
     outputs = Dense(config.classes, activation="sigmoid")(x)
 
-    model = tf.keras.models.Model(inputs=inputs, outputs=outputs)
-    model.compile(
+    model = tf.keras.models.Model(inputs=inputs, outputs=outputs) 
+    if not sub:
+        model.compile(
         optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
         loss=tf.keras.losses.BinaryCrossentropy(),
         metrics=["accuracy", tf.keras.metrics.AUC(multi_label=True)],
     )
-    model._name = "Mousavi"
-    print(model.summary())
+        model._name = "Rajpurkar"
+        print(model.summary())
     
     return model
