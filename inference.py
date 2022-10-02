@@ -124,7 +124,7 @@ def build_scores(model: tf.keras.Model, data: np.asarray, config) -> None:
     data = data.squeeze()
 
     for i, (ax, ch) in enumerate(zip(axs, ch_info)):
-        im = ax.scatter(np.arange(len(data[i])), data[i], cmap = 'hot_r', c= beat_normalized[i], vmin = v_min, vmax = v_max)
+        im = ax.scatter(np.arange(len(data[i])), data[i], cmap = 'Spectral', c= beat_normalized[i], vmin = v_min, vmax = v_max)
         ax.plot(data[i],color=(0.2, 0.68, 1))
         ax.set_yticks([])
         ax.set_title(ch, fontsize = 25)

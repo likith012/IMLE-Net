@@ -25,12 +25,12 @@ seed = 42
 random.seed(seed)
 np.random.seed(seed)
 
-
+# Training of model
 def train(
     model,
     path: str = "data/ptb",
-    batch_size: int = 32,
-    epochs: int = 60,
+    batch_size: int = 32, # Reduce this to 16 if there is any memory problem
+    epochs: int = 60, 
     loggr=None,
     name: str = "imle_net",
     sub_disease: bool = False,
@@ -84,10 +84,12 @@ def train(
             name=name,
             sub=sub_disease,
         )
+
+    # Early Stopping
     stop_early = tf.keras.callbacks.EarlyStopping(
         monitor=metric,
         min_delta=0.0001,
-        patience=10,
+        patience=20,
         mode="max",
         restore_best_weights=True,
         verbose=1,
@@ -152,6 +154,12 @@ def train(
 if __name__ == "__main__":
     """Main function to run the training of the model."""
 
+    # Set the GPU to allocate only used memory at runtime.
+    gpu_devices = tf.config.experimental.list_physical_devices('GPU')
+    for device in gpu_devices:
+        print(device)
+        tf.config.experimental.set_memory_growth(device, True)
+
     # Args parser
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -163,7 +171,7 @@ if __name__ == "__main__":
         default="imle_net",
         help="Select the model to train. (imle_net, mousavi, rajpurkar)",
     )
-    parser.add_argument("--batchsize", type=int, default=32, help="Batch size")
+    parser.add_argument("--batchsize", type=int, default=32, help="Batch size") # Reduce the batch size if any memory related problem comes up
     parser.add_argument("--epochs", type=int, default=60, help="Number of epochs")
     parser.add_argument(
         "--loggr", type=str2bool, default=False, help="Enable wandb logging"
