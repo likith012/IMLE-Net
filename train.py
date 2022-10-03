@@ -25,7 +25,6 @@ seed = 42
 random.seed(seed)
 np.random.seed(seed)
 
-# Training of model
 def train(
     model,
     path: str = "data/ptb",
@@ -163,7 +162,7 @@ if __name__ == "__main__":
     # Args parser
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--data_dir", type=str, default="data/ptb", help="Ptb-xl dataset location"
+        "--data_dir", type=str, default="data/ptb", help="Ptb-XL dataset location"
     )
     parser.add_argument(
         "--model",
@@ -171,7 +170,7 @@ if __name__ == "__main__":
         default="imle_net",
         help="Select the model to train. (imle_net, mousavi, rajpurkar)",
     )
-    parser.add_argument("--batchsize", type=int, default=32, help="Batch size") # Reduce the batch size if any memory related problem comes up
+    parser.add_argument("--batchsize", type=int, default=32, help="Batch size (Choose smaller batch size if available GPU memory is less)") 
     parser.add_argument("--epochs", type=int, default=60, help="Number of epochs")
     parser.add_argument(
         "--loggr", type=str2bool, default=False, help="Enable wandb logging"

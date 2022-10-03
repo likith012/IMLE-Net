@@ -215,8 +215,17 @@ def train(
     checkpoint_filepath = os.path.join(os.getcwd(), "checkpoints")
     os.makedirs(checkpoint_filepath, exist_ok=True)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    model.to(device)
 
+    #Distributed Training if for multiple GPUs 
+    if torch.cuda.device_count() > 1:
+        print("Let's use", torch.cuda.device_count(), "GPUs!")
+        model = nn.DataParallel(model)
+    elif torch.cuda.device_count() == 1 :
+        print("You have a GPU on your system, Let's use it")
+    else:
+        print("You don't have any GPU available on your system, Let's use CPU")
+
+    model.to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
     loss_func = torch.nn.BCEWithLogitsLoss()
 
