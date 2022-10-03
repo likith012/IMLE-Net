@@ -92,9 +92,9 @@ class model_checkpoint(tf.keras.callbacks.Callback):
         _, accuracy = Metrics(gt, score)
 
         if self.sub:
-            temp_path = f"{self.name}_sub_diagnostic_weights.h5"
+            temp_path = f"{self.name}_sub_diagnostic_weights.h5" # Here we are saving the sub_diagnostic model weights when we run (train.py with --sub=True) for visualisation
         else:
-            temp_path = f"{self.name}_weights.h5"
+            temp_path = f"{self.name}_weights.h5" # Here we are saving the model weights when we run train.py
         path = os.path.join(self.savepath, temp_path)
 
         if epoch > 5 and self.best_score < roc_auc:

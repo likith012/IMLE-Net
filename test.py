@@ -56,6 +56,7 @@ def test(
     print(f"accuracy: {mean_acc}")
     print(f"roc_score : {roc_score}")
     print(f"class wise AUC : {class_auc}")
+    print(f"F1 score (Max): {summary[0]}")
     print(f"class wise precision, recall, f1 score : {summary}")
 
     logs = dict()
@@ -63,6 +64,7 @@ def test(
     logs["mean_acc"] = mean_acc
     logs["accuracy"] = acc
     logs["class_auc"] = class_auc
+    logs["F1 score (Max)"] = summary[0]
     logs["class_precision_recall_f1"] = summary
     logs_path = os.path.join(os.getcwd(), "logs")
     os.makedirs(logs_path, exist_ok=True)
