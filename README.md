@@ -84,31 +84,32 @@ The `PTB-XL` dataset can be downloaded from the [Physionet website](https://phys
 >**More details on the dataset can be found [here](https://github.com/likith012/IMLE-Net/blob/main/data/download.md).**
 
 ## Getting started 🥷
+
 #### Setting up the environment
-- All the development work is done using `Python 3.7`
-- Install all the necessary dependencies using `requirements.txt` file. Run `pip install -r requirements.txt` in terminal
-- Alternatively, set up the environment and train the model using the `Dockerfile`. Run `docker build -f Dockerfile -t <image_name> .`
+- All the development work is done on `Python 3.7`
+- Install necessary dependencies using `requirements.txt` file. Run `pip install -r requirements.txt` in terminal
+- Alternatively, set up environment and train the model using `Dockerfile`. Run `docker build -f Dockerfile -t <image_name> .`
 
 #### What each file does
-
 - `train.py` trains a particular model from scratch
 - `preprocessing` contains the preprocessing scripts
 - `models` contains scripts for each model
 - `utils` contains utilities for `dataloader`, `callbacks` and `metrics`
 
 #### Training the model
-- All the models are implemented in `tensorflow` and `torch`
+- The models are implemented in either `tensorflow` or `torch`
 - Models implemented in `tensorflow` are `imle_net`, `mousavi` and `rajpurkar`
 - Models implemented in `torch` are `ecgnet` and `resnet101`
-- To log the training and validation metrics on wandb, set `--log_wandb` flag to `True`
+- To log the training and validation metrics using `wandb` tool, set `--loggr` to `True`
 - To train a particular model from scratch, `cd IMLE-Net`
+- To train a model on sub-diseases of MI, set `sub` to `True`
 - To run `tensorflow` models, `python train.py --model imle_net --batchsize 32 --epochs 60 --loggr False`
 - To run `torch` models, `python torch_train.py --model ecgnet --batchsize 32 --epochs 60 --loggr False`
 
 #### Testing the model
-- To test the model, `cd IMLE-Net`
-- To run `tensorflow` models, `python test.py --model imle_net --batchsize 32`
-- To run `torch` models, `python torch_test.py --model ecgnet --batchsize 32`
+- To test a model on `test dataset` after training the model, `cd IMLE-Net`
+- For `tensorflow` models, `python test.py --model imle_net --batchsize 32`
+- For `torch` models, `python torch_test.py --model ecgnet --batchsize 32`
 
 #### Reimplementation and visualization
 - It's a three step process, first train the model on main dataset with `sub` set to `False`.
