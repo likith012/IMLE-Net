@@ -124,12 +124,12 @@ The `PTB-XL` dataset can be downloaded from the [Physionet website](https://phys
 
 > Download the weights for several models trained on the PTB-XL dataset.
 
-| Name | Model link |  
-| ---- | ---------- |
-| Mousavi et al.| [link](https://drive.google.com/file/d/13nUC_9mlSdw-I_HfFai4k8k9bgOruQ-x/view?usp=sharing) |
-| ECGNet | [link](https://drive.google.com/file/d/1k0cgZBKQmkeVwu879NAtV-hDfLzCRCYJ/view?usp=sharing) |
-| Rajpurkar et al. | [link](https://drive.google.com/file/d/18GZMDBAE2mHmQy8aXwD6cZoPjIAcavWX/view?usp=sharing) |
-| **IMLE-Net**| [link](https://drive.google.com/file/d/1-ZJSEr_NtbLXWWx5otXT5ItE5p-Wc0HN/view?usp=sharing) |
+| Name | Model link | Re-Implemented Model Link |
+| ---- | ---------- | :-------------------------: |
+| Mousavi et al.| [link](https://drive.google.com/file/d/13nUC_9mlSdw-I_HfFai4k8k9bgOruQ-x/view?usp=sharing) | [link](https://drive.google.com/file/d/133rzsq6VJvW5BDa5IR7_CNDO_u39UtIa/view?usp=sharing) |
+| ECGNet | [link](https://drive.google.com/file/d/1k0cgZBKQmkeVwu879NAtV-hDfLzCRCYJ/view?usp=sharing) | [link](https://drive.google.com/file/d/1Vx5oHilGxrxEJfUnLfg--Ow9AjyaUQu1/view?usp=sharing) |
+| Rajpurkar et al. | [link](https://drive.google.com/file/d/18GZMDBAE2mHmQy8aXwD6cZoPjIAcavWX/view?usp=sharing) | [link](https://drive.google.com/file/d/16lJ8ICAvXzkyuGChesTMTsCN55GYI8Oj/view?usp=sharing) |
+| **IMLE-Net**| [link](https://drive.google.com/file/d/1-ZJSEr_NtbLXWWx5otXT5ItE5p-Wc0HN/view?usp=sharing) | [link](https://drive.google.com/file/d/1ZF4nGjA-qjOb1e0gOGrVKrCACNDwLNn-/view?usp=sharing) |
 
 ## License and Citation 📰
 The software is licensed under the Apache License 2.0. Please cite the following paper if you have used this code:
