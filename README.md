@@ -9,6 +9,10 @@ This repostiory contains code, results and dataset links for our ***IEEE:SMC 202
 
 >**More details on the paper can be found [here](https://ieeexplore.ieee.org/document/9658706). Also available on [arxiv](https://arxiv.org/abs/2204.05116).**
 
+>**Raise an issue for any query regarding the code, paper or for any support.**
+
+>**Tested and works with the latest tensorflow and torch versions at the time of this commit.**
+
 ## Table of contents
 - [Introduction](https://github.com/likith012/IMLE-Net/edit/main/README.md#introduction-)
 - [Highlights](https://github.com/likith012/IMLE-Net/edit/main/README.md#features-)
